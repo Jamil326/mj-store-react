@@ -62,7 +62,7 @@ const Home = () => {
     }
     toast.success(data.message)
     if(data.data.getProduct.length==='undefine' || data.data.getProduct.length === null){
-      throw new Error(data.message)
+      return <p>no more items to show</p>
     }
     setProduct(data.data.getProduct);
     

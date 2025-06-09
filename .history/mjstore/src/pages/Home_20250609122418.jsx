@@ -36,11 +36,18 @@ const Home = () => {
       const nextPage = Math.max(prev-1,1);
       console.log(page);
       return nextPage;
+      
+          
+      
+      
+    
+      
+    
     })
   }
 
    const getData = async (page)=>{
-     let limit=14;
+     let limit=16;
   const baseUrl =`https://mj-store.onrender.com/api/v1/product/get/product?page=${page}&limit=${limit}`;
  
 
@@ -61,11 +68,7 @@ const Home = () => {
       throw new Error(data.message);
     }
     toast.success(data.message)
-    if(data.data.getProduct.length==='undefine' || data.data.getProduct.length === null){
-      throw new Error(data.message)
-    }
     setProduct(data.data.getProduct);
-    
     
     
   } catch (error) {
@@ -81,8 +84,6 @@ useEffect(()=>{
   getData(page);
   
 },[page])
-
-
   
  
 
@@ -101,7 +102,7 @@ const categories = [
           
        <header id='category' className='container overflow-x-scroll overflow-md-hidden '>
        <ul className='list-unstyled d-flex  fw-bold    '>
-         {categories.map((item,index)=> (
+         { categories.map((item,index)=> (
            <div className='d-flex flex-grow-1  flex-column p-2  m-3 bg-light shadow  justify-content-center rounded' key={item.id}  style={{cursor:'pointer'}}>
              <span className='text-center  fs-5   '>{item.icon}</span>
              <span className='text-center '>{item.name}</span>
@@ -113,7 +114,7 @@ const categories = [
        <div className='container-fluid   mt-3 p-0'>
          <div className='row  p-0 m-0   '>
            {
-             product.length>0?(
+             cd-product.length>0?(
                product.map((item,index)=>{
                  return <div className='col-6 col-md-4 mb-1  p-0' key={ item.id } style={{cursor:'pointer'}}>
                    <ProductCard

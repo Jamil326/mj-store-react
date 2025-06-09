@@ -40,7 +40,7 @@ const Home = () => {
   }
 
    const getData = async (page)=>{
-     let limit=14;
+     let limit=16;
   const baseUrl =`https://mj-store.onrender.com/api/v1/product/get/product?page=${page}&limit=${limit}`;
  
 
@@ -61,11 +61,7 @@ const Home = () => {
       throw new Error(data.message);
     }
     toast.success(data.message)
-    if(data.data.getProduct.length==='undefine' || data.data.getProduct.length === null){
-      throw new Error(data.message)
-    }
     setProduct(data.data.getProduct);
-    
     
     
   } catch (error) {
@@ -81,8 +77,6 @@ useEffect(()=>{
   getData(page);
   
 },[page])
-
-
   
  
 
@@ -113,7 +107,7 @@ const categories = [
        <div className='container-fluid   mt-3 p-0'>
          <div className='row  p-0 m-0   '>
            {
-             product.length>0?(
+             product.length>?0?(
                product.map((item,index)=>{
                  return <div className='col-6 col-md-4 mb-1  p-0' key={ item.id } style={{cursor:'pointer'}}>
                    <ProductCard
