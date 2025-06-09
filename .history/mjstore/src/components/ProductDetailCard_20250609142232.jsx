@@ -1,0 +1,5 @@
+const
+
+const ProductDetailCard = ( product ) => {
+
+}

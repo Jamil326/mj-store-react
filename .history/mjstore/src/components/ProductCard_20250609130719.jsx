@@ -1,0 +1,33 @@
+import { Card , Button , Container , Row ,Col } from 'react-bootstrap';
+
+const ProductCard = ({product}) => {
+    const {id ,name , price , title , image } = product;
+    return(
+
+
+<Col xs={12} sm={6} md={4} >
+<Card className=' p-1 shadow-sm  ' id={id} >
+<Card.Img className='  object-fit-cover img-thumbnail h-25'  variant='top' src={image[0]?.url} alt={name}   fluid />
+<Card.Body>
+<Card.Title>{name}</Card.Title>
+<Card.Subtitle>{title}</Card.Subtitle>
+<Card.Title className='mt-2 text-success'><span className=''>₹</span>{price}</Card.Title>
+<Card.Text className='fw-bold'>Free Delivery</Card.Text>
+<div className=' d-md-flex justify-content-start '>
+    <Button className='m-1 ' variant='success' size='sm'>Add</Button>
+    <Button className='m-1' variant='secondary' size='sm'>Add to  Cart</Button>
+</div>
+
+</Card.Body>
+</Card>
+</Col>
+
+    )
+}
+
+
+
+
+
+
+export default ProductCard;
