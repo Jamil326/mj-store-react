@@ -1,0 +1,24 @@
+import ProductCard from '../components/ProductCard';
+import { useLocation } from 'react-router-dom';
+import { Card ,ListGroup } from 'react-bootstrap';
+import { useState ,useEffect} from 'react';
+
+
+const Cart = () => {
+
+    const location = useLocation();
+    const { product } = location.state;
+    const [items , setItems ] = useState([product]);
+
+    useEffect(()=>{
+        console.log(items);
+    })
+    
+    return (
+      div
+    );
+}
+
+
+
+export default Cart;

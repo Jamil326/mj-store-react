@@ -1,0 +1,5 @@
+
+
+const OrderCard = ({details}) =>{
+    return
+}

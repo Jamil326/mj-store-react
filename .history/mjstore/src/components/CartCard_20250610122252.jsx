@@ -1,0 +1,7 @@
+
+
+const CartCard = ({product}) => {
+    return(
+        
+    )
+}
