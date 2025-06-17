@@ -34,9 +34,7 @@ const Orders = () => {
           }
 
           if ( res.status === 200 ){
-              setData(()=>{
-              return (result.data).filter((item)=> item.orderStatus !=='Cancelled')
-              });
+              setData(result.data);
               console.log(result.data);
           }
       } catch (error) {
@@ -87,10 +85,7 @@ const Orders = () => {
 
         
   }
-
-  const clearAll = () =>{
-      setData([]);
-  }
+  
     
     return (
         <div className='container  d-flex flex-column '>

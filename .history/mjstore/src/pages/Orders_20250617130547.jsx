@@ -35,7 +35,7 @@ const Orders = () => {
 
           if ( res.status === 200 ){
               setData(()=>{
-              return (result.data).filter((item)=> item.orderStatus !=='Cancelled')
+                  
               });
               console.log(result.data);
           }

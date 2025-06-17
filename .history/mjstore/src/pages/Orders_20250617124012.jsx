@@ -34,9 +34,7 @@ const Orders = () => {
           }
 
           if ( res.status === 200 ){
-              setData(()=>{
-              return (result.data).filter((item)=> item.orderStatus !=='Cancelled')
-              });
+              setData(result.data);
               console.log(result.data);
           }
       } catch (error) {
@@ -75,9 +73,7 @@ const Orders = () => {
              if( res.status === 200 ){
                  toast.success(result.message);
                  setData((prev)=>{
-                   return  prev.filter((item)=>{
-                        return  item.orderStatus !== "Cancelled"
-                     })
+                     prev.filter(())
                  })
                  
              }
@@ -87,15 +83,10 @@ const Orders = () => {
 
         
   }
-
-  const clearAll = () =>{
-      setData([]);
-  }
     
     return (
         <div className='container  d-flex flex-column '>
-         <h1 className='text-center mt-1 border-bottom py-3'>Orders Summary</h1>
-         <Button onClick={clearAll} variant='danger' className='w-25'>Clear All</Button>      
+         <h1 className='text-center mt-1 border-bottom py-3'>Orders Summary</h1>      
               
           
            {datas.length>0?(datas.map((dt,index)=>(
