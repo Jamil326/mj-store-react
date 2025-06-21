@@ -16,18 +16,18 @@ export default defineConfig({
         name: 'MJ Store App',
         short_name: 'MJ Store786',
         description: 'A Progressive Web App built with Vite',
-        theme_color: '#71f582',
-        background_color: '#ffffff',
+        theme_color: '#ffffff',
+        background_color: '#34eb93',
         display: 'standalone',
         start_url: '/',
         icons: [
           {
-            src: '/icon-195.jpeg',
+            src: '/icon-19.png',
             sizes: '192x192',
             type: 'image/png',
           },
           {
-            src: '/icon-195.jpeg',
+            src: '/icon-194.png',
             sizes: '512x512',
             type: 'image/png',
           },
