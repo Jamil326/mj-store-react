@@ -14,10 +14,10 @@ export default defineConfig({
       },
       manifest: {
         name: 'MJ Store App',
-        short_name: 'MJ Store786',
+        short_name: 'MJ Store',
         description: 'A Progressive Web App built with Vite',
         theme_color: '#ffffff',
-        background_color: '#34eb93',
+        background_color: '#ffffff',
         display: 'standalone',
         start_url: '/',
         icons: [
