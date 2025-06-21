@@ -14,7 +14,7 @@ export default defineConfig({
       },
       manifest: {
         name: 'MJ Store App',
-        short_name: 'MJS',
+        short_name: 'VitePWA',
         description: 'A Progressive Web App built with Vite',
         theme_color: '#ffffff',
         background_color: '#ffffff',

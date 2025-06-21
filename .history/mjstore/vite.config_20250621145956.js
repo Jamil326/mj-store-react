@@ -13,8 +13,8 @@ export default defineConfig({
         enabled: true,
       },
       manifest: {
-        name: 'MJ Store App',
-        short_name: 'MJS',
+        name: 'MJ Store ',
+        short_name: 'VitePWA',
         description: 'A Progressive Web App built with Vite',
         theme_color: '#ffffff',
         background_color: '#ffffff',

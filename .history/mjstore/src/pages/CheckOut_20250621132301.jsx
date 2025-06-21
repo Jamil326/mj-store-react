@@ -116,9 +116,9 @@ const OrderPage = () => {
             </ListGroup.Item>
             <ListGroup.Item>
               <strong className=''>Quantity:</strong>
-              <Button onClick={handleSub} variant='success ms-3 py-1'>-</Button>
-              <span className=' mx-2  fs-3  border text-center px-3 pb-2 '>{noItem}</span>
-              <Button onClick={handleAdd} variant='success py-1'>+</Button>
+              <Button onClick={handleSub} variant='success py-1'>-</Button>
+              <span className=' mx-2 px-2 fs-2 '>{noItem}</span>
+              <Button onClick={handleAdd} variant='success'>+</Button>
             </ListGroup.Item>
             <ListGroup.Item>
               <strong>Price:</strong> ₹{item?.price || 0}
