@@ -19,7 +19,6 @@ import CheckOut from './pages/CheckOut';
 import Orders from './pages/Orders';
 import OrderPageBuyNow from './pages/OrderPageBuyNow';
 import OrderPageCartCheckout from './pages/OrderPageCartCheckout';
-import OrderPage2 from './pages/OrderPage2';
 
 
 
@@ -84,18 +83,7 @@ const router= createBrowserRouter([
       },
 
       {
-        path:'OrderPageBuyNow',
-        element:<OrderPageBuyNow/>
-      },
-
-      {
-        path:'OrderPageCartCheckout',
-        element:<OrderPageCartCheckout/>
-      },
-
-      {
-        path:'checkout2',
-        element:<OrderPage2 />
+        path:''
       }
 
     ]

@@ -67,14 +67,8 @@ const Cart = () => {
       });
 
       const result = await res.json();
-      if(result.status='fail'){
-        
-                  removeItemFromUI(productId);
-
-      }
 
       if (res.ok) {
-          console.log('inside ok');
         toast.success("Item removed from cart.");
         removeItemFromUI(productId);
       } else {
@@ -137,7 +131,7 @@ const Cart = () => {
         </>
       ) : (
         <div className="d-flex flex-column vh-100 justify-content-center align-items-center text-center">
-          <HiOutlineShoppingCart className="fs-1 text-success w-50 h-25" />
+          <HiOutlineShoppingCart className="fs-1 text-success w-100 h-100" />
           <span className="text-dark fw-bold">Cart is Empty</span>
         </div>
       )}

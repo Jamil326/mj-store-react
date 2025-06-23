@@ -67,14 +67,9 @@ const Cart = () => {
       });
 
       const result = await res.json();
-      if(result.status='fail'){
-        
-                  removeItemFromUI(productId);
-
-      }
 
       if (res.ok) {
-          console.log('inside ok');
+          console.log();
         toast.success("Item removed from cart.");
         removeItemFromUI(productId);
       } else {

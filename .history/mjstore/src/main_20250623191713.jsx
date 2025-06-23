@@ -91,11 +91,6 @@ const router= createBrowserRouter([
       {
         path:'OrderPageCartCheckout',
         element:<OrderPageCartCheckout/>
-      },
-
-      {
-        path:'checkout2',
-        element:<OrderPage2 />
       }
 
     ]

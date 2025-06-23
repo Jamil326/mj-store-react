@@ -60,7 +60,7 @@ const ProductDetails = () => {
   };
 
   const handleBuyNow = () => {
-    navigate("/checkout", { state: { item: product } });
+    navigate("/che", { state: { item: product } });
   };
 
   return (

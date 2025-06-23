@@ -95,7 +95,7 @@ const router= createBrowserRouter([
 
       {
         path:'checkout2',
-        element:<OrderPage2 />
+        element:<O
       }
 
     ]

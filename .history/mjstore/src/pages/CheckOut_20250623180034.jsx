@@ -1,4 +1,4 @@
-import React, { useContext, useState } from "react";
+import React, { useContext, useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { Container, Row, Col, Image, ListGroup, Card, Button } from "react-bootstrap";
 import { UserContext } from "../context/userContext";
@@ -8,35 +8,60 @@ import { toast } from "react-toastify";
 const OrderPage = () => {
   const { logged } = useContext(UserContext);
   const [visible, setVisible] = useState(false);
+  const [items, setItems] = useState([]);
+  const [itemIds, setItemIds] = useState([]);
   const location = useLocation();
   const navigate = useNavigate();
 
   const user = JSON.parse(localStorage.getItem("user-info") || "{}");
   const { city, state, pin, landmark, street } = user?.address || {};
-  const { item, quantity = 1 } = location?.state || {};
-  const [noItem, setNoItem] = useState(quantity);
+  const { directBuy = false, product, quantity = 1 } = location?.state || {};
 
-  const handleAdd = () => setNoItem((prev) => prev + 1);
-  const handleSub = () => setNoItem((prev) => Math.max(prev - 1, 1));
-  const toggleAddressForm = () => setVisible((prev) => !prev);
-  const redirectToLogin = () => navigate("/login");
+  useEffect(() => {
+    if (directBuy) {
+      setItems([{ product, quantity }]);
+    } else {
+      fetchCartItems();
+    }
+  }, [directBuy, product, quantity]);
+
+  const fetchCartItems = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) throw new Error("Authorization token required.");
+
+      const response = await fetch("https://mj-store.onrender.com/api/v1/user/cart/fetch", {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      const result = await response.json();
+      if (!response.ok) throw new Error(result.message || "Failed to fetch cart items.");
+
+      setItems(result.data.items || []);
+      setItemIds(result.data.items.map((item) => item._id)); // Extract `itemIds` from cart items
+    } catch (error) {
+      toast.error(error.message);
+    }
+  };
 
   const placeOrder = async () => {
     try {
       const token = localStorage.getItem("token");
-      if (!token) {
-        return toast.warn("Authorization token required.");
-      }
+      if (!token) throw new Error("Authorization token required.");
 
-      const orderUrl = "https://mj-store.onrender.com/api/v1/user/order";
       const orderPayload = {
         paymentMethod: "Cash On Delivery",
-        directBuy: true, // Indicating a direct purchase
-        product: { _id: item._id },
-        quantity: noItem,
+        directBuy,
+        items: directBuy
+          ? [{ product: { _id: product._id }, quantity }]
+          : itemIds, // Pass `itemIds` for cart checkout
       };
 
-      const orderResponse = await fetch(orderUrl, {
+      const response = await fetch("https://mj-store.onrender.com/api/v1/user/order", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -45,18 +70,19 @@ const OrderPage = () => {
         body: JSON.stringify(orderPayload),
       });
 
-      const orderResult = await orderResponse.json();
+      const result = await response.json();
+      if (!response.ok) throw new Error(result.message || "Failed to place the order.");
 
-      if (!orderResponse.ok) {
-        throw new Error(orderResult.message || "Failed to place order.");
-      }
-
-      toast.success("Order placed successfully.");
+      toast.success("Order placed successfully!");
       navigate("/orders");
     } catch (error) {
-      toast.error(error.message);
+      toast.error(error.message || "An error occurred while placing the order.");
     }
   };
+
+  const toggleAddressForm = () => setVisible((prev) => !prev);
+
+  const redirectToLogin = () => navigate("/login");
 
   if (!logged) {
     return (
@@ -70,40 +96,33 @@ const OrderPage = () => {
 
   return (
     <Container fluid className="px-3 py-3">
-      {/* Product Image */}
-      <Row className="text-center">
-        <Col>
-          <Image
-            src={item?.image?.[0]?.url || "/placeholder.jpg"}
-            alt="Product"
-            fluid
-            className="rounded shadow mb-4"
-          />
-        </Col>
-      </Row>
-
-      {/* Product Details */}
-      <Row className="mb-4">
-        <Col>
-          <ListGroup>
-            <ListGroup.Item>
-              <strong>Product Name:</strong> {item?.name || "N/A"}
-            </ListGroup.Item>
-            <ListGroup.Item>
-              <strong>Quantity:</strong>
-              <Button onClick={handleSub} variant="success ms-3 py-1">-</Button>
-              <span className="mx-2 fs-3 border text-center px-3 pb-2">{noItem}</span>
-              <Button onClick={handleAdd} variant="success py-1">+</Button>
-            </ListGroup.Item>
-            <ListGroup.Item>
-              <strong>Price:</strong> ₹{item?.price || 0}
-            </ListGroup.Item>
-            <ListGroup.Item>
-              <strong>Total:</strong> ₹{item?.price * noItem || 0}
-            </ListGroup.Item>
-          </ListGroup>
-        </Col>
-      </Row>
+      {items.map(({ product, quantity }, index) => (
+        <Row key={product._id || index} className="mb-4">
+          {/* Product Details */}
+          <Col xs={12} md={8}>
+            <Image
+              src={product.image?.[0]?.url || "/placeholder.jpg"}
+              alt={product.name || "Product Image"}
+              fluid
+              className="rounded shadow mb-3"
+            />
+            <ListGroup>
+              <ListGroup.Item>
+                <strong>Product Name:</strong> {product.name || "N/A"}
+              </ListGroup.Item>
+              <ListGroup.Item>
+                <strong>Price:</strong> ₹{product.price || 0}
+              </ListGroup.Item>
+              <ListGroup.Item>
+                <strong>Quantity:</strong> {quantity}
+              </ListGroup.Item>
+              <ListGroup.Item>
+                <strong>Total:</strong> ₹{product.price * quantity || 0}
+              </ListGroup.Item>
+            </ListGroup>
+          </Col>
+        </Row>
+      ))}
 
       {/* Address Section */}
       <Row>

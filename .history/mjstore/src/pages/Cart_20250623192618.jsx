@@ -10,8 +10,8 @@ const Cart = () => {
   const [items, setItems] = useState([]);
   const [totalValue, setTotalValue] = useState(0);
 
-  // Fetch cart items
-  const fetchCartItems = async () => {
+  // Fetch cart items from the API
+  const getData = async () => {
     const url = "https://mj-store.onrender.com/api/v1/user/cart/fetch";
     const token = localStorage.getItem("token");
 
@@ -31,7 +31,8 @@ const Cart = () => {
       const result = await res.json();
 
       if (res.ok) {
-        updateCart(result.data.items || []);
+        setItems(result.data.items || []);
+        calculateTotal(result.data.items || []);
       } else {
         toast.warn(result.message || "Failed to fetch cart items.");
       }
@@ -40,19 +41,20 @@ const Cart = () => {
     }
   };
 
-  // Update cart items and total value
-  const updateCart = (cartItems) => {
-    setItems(cartItems);
-    const total = cartItems.reduce((sum, item) => sum + item.product.price * item.quantity, 0);
+  useEffect(() => {
+    getData();
+  }, []);
+
+  // Calculate total cart value
+  const calculateTotal = (cartItems) => {
+    const total = cartItems.reduce(
+      (acc, item) => acc + item.product.price * item.quantity,
+      0
+    );
     setTotalValue(total);
   };
 
-  // Remove item from cart and UI
-  const removeItemFromUI = (productId) => {
-    const updatedItems = items.filter((item) => item.product._id !== productId);
-    updateCart(updatedItems);
-  };
-
+  // Remove item from cart
   const handleRemoveFromCart = async (productId) => {
     const token = localStorage.getItem("token");
 
@@ -67,16 +69,12 @@ const Cart = () => {
       });
 
       const result = await res.json();
-      if(result.status='fail'){
-        
-                  removeItemFromUI(productId);
-
-      }
 
       if (res.ok) {
-          console.log('inside ok');
+        const updatedItems = items.filter((item) => item.product._id !== productId);
+        setItems(updatedItems);
+        calculateTotal(updatedItems);
         toast.success("Item removed from cart.");
-        removeItemFromUI(productId);
       } else {
         toast.warn(result.message || "Failed to remove item.");
       }
@@ -85,7 +83,7 @@ const Cart = () => {
     }
   };
 
-  // Checkout items
+  // Handle checkout and navigate to OrderPage2 with itemIds
   const handleCheckout = () => {
     const itemIds = items.map((item) => item.product._id);
 
@@ -97,29 +95,18 @@ const Cart = () => {
     navigate("/checkout2", { state: { itemIds } });
   };
 
-  useEffect(() => {
-    fetchCartItems();
-  }, []);
-
   return (
     <div>
       {items.length > 0 ? (
         <>
-          {/* Refresh Cart Button */}
-          <div className="d-flex justify-content-end align-items-center p-3">
-            <Button onClick={fetchCartItems} variant="success">
-              Refresh Cart
-            </Button>
-          </div>
-
-          {items.map((item) => (
-            <CartCard
-              key={item.product._id}
-              product={{ product: item.product, quantity: item.quantity }}
-              onRemoveSuccess={() => handleRemoveFromCart(item.product._id)}
-            />
+          {items.map((item, index) => (
+            <div key={index}>
+              <CartCard
+                product={{ product: item.product, quantity: item.quantity }}
+                onRemoveSuccess={() => handleRemoveFromCart(item.product._id)}
+              />
+            </div>
           ))}
-
           {/* Cart Total */}
           <div className="d-flex justify-content-end align-items-center p-3 border-top">
             <ListGroup>
@@ -137,8 +124,10 @@ const Cart = () => {
         </>
       ) : (
         <div className="d-flex flex-column vh-100 justify-content-center align-items-center text-center">
-          <HiOutlineShoppingCart className="fs-1 text-success w-50 h-25" />
-          <span className="text-dark fw-bold">Cart is Empty</span>
+          <div className="d-flex flex-column justify-content-center text-center">
+            <HiOutlineShoppingCart className="fs-1 text-success w-100 h-100" />
+            <span className="text-dark fw-bold">Cart is Empty</span>
+          </div>
         </div>
       )}
     </div>

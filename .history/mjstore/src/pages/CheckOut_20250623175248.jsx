@@ -16,27 +16,31 @@ const OrderPage = () => {
   const { item, quantity = 1 } = location?.state || {};
   const [noItem, setNoItem] = useState(quantity);
 
+  // Handlers for incrementing and decrementing quantity
   const handleAdd = () => setNoItem((prev) => prev + 1);
   const handleSub = () => setNoItem((prev) => Math.max(prev - 1, 1));
+
   const toggleAddressForm = () => setVisible((prev) => !prev);
+
+  // Redirects user to login if not logged in
   const redirectToLogin = () => navigate("/login");
 
   const placeOrder = async () => {
     try {
       const token = localStorage.getItem("token");
       if (!token) {
-        return toast.warn("Authorization token required.");
+        toast.warn("Authorization token required.");
+        return;
       }
 
-      const orderUrl = "https://mj-store.onrender.com/api/v1/user/order";
       const orderPayload = {
         paymentMethod: "Cash On Delivery",
-        directBuy: true, // Indicating a direct purchase
+        directBuy: true, // Direct purchase flag
         product: { _id: item._id },
         quantity: noItem,
       };
 
-      const orderResponse = await fetch(orderUrl, {
+      const response = await fetch("https://mj-store.onrender.com/api/v1/user/order", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -45,19 +49,20 @@ const OrderPage = () => {
         body: JSON.stringify(orderPayload),
       });
 
-      const orderResult = await orderResponse.json();
+      const result = await response.json();
 
-      if (!orderResponse.ok) {
-        throw new Error(orderResult.message || "Failed to place order.");
+      if (!response.ok) {
+        throw new Error(result.message || "Failed to place the order.");
       }
 
-      toast.success("Order placed successfully.");
+      toast.success("Order placed successfully!");
       navigate("/orders");
     } catch (error) {
-      toast.error(error.message);
+      toast.error(error.message || "An error occurred while placing the order.");
     }
   };
 
+  // If the user is not logged in, prompt login
   if (!logged) {
     return (
       <div className="text-center mt-5">
@@ -75,7 +80,7 @@ const OrderPage = () => {
         <Col>
           <Image
             src={item?.image?.[0]?.url || "/placeholder.jpg"}
-            alt="Product"
+            alt={item?.name || "Product Image"}
             fluid
             className="rounded shadow mb-4"
           />
@@ -91,15 +96,17 @@ const OrderPage = () => {
             </ListGroup.Item>
             <ListGroup.Item>
               <strong>Quantity:</strong>
-              <Button onClick={handleSub} variant="success ms-3 py-1">-</Button>
-              <span className="mx-2 fs-3 border text-center px-3 pb-2">{noItem}</span>
-              <Button onClick={handleAdd} variant="success py-1">+</Button>
+              <div className="d-inline-flex align-items-center ms-3">
+                <Button onClick={handleSub} variant="success py-1">-</Button>
+                <span className="mx-3 fs-4 border px-3">{noItem}</span>
+                <Button onClick={handleAdd} variant="success py-1">+</Button>
+              </div>
             </ListGroup.Item>
             <ListGroup.Item>
               <strong>Price:</strong> ₹{item?.price || 0}
             </ListGroup.Item>
             <ListGroup.Item>
-              <strong>Total:</strong> ₹{item?.price * noItem || 0}
+              <strong>Total:</strong> ₹{(item?.price || 0) * noItem}
             </ListGroup.Item>
           </ListGroup>
         </Col>

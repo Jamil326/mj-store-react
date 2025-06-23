@@ -67,11 +67,7 @@ const Cart = () => {
       });
 
       const result = await res.json();
-      if(result.status='fail'){
-        
-                  removeItemFromUI(productId);
-
-      }
+      console.log(result);
 
       if (res.ok) {
           console.log('inside ok');
