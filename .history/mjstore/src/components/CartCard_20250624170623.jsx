@@ -36,7 +36,7 @@ const CartCard = ({ product, onRemoveSuccess }) => {
       console.log(result);
 
       if (!res.ok) {
-        console.log(result);
+        console.log();
         throw new Error(result.message || "Failed to update quantity.");
       }
 
