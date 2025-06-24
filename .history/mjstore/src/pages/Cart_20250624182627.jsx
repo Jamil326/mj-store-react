@@ -125,7 +125,7 @@ const Cart = () => {
       {items.length > 0 ? (
         <>
           {/* Refresh and Clear Cart Buttons */}
-          <div className="d-flex justify-content-between align-items-center p-3">
+          <div className="d-flex justify-content- align-items-center p-3">
            
             <Button onClick={handleClearCart} variant="danger">
               Clear Cart

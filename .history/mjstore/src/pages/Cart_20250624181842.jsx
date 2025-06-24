@@ -32,7 +32,7 @@ const Cart = () => {
 
       if (res.ok) {
         updateCart(result.data.items || []);
-        fetchCartItems();
+        
       } else {
         toast.warn(result.message || "Failed to fetch cart items.");
       }
@@ -126,7 +126,9 @@ const Cart = () => {
         <>
           {/* Refresh and Clear Cart Buttons */}
           <div className="d-flex justify-content-between align-items-center p-3">
-           
+            <Button onClick={fetchCartItems} variant="success">
+              Refresh Cart
+            </Button>
             <Button onClick={handleClearCart} variant="danger">
               Clear Cart
             </Button>
