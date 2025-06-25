@@ -9,13 +9,11 @@ const OrderPage = () => {
   const { logged } = useContext(UserContext);
   const [visible, setVisible] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [userAddress, setUserAddress] = useState(
-    JSON.parse(localStorage.getItem("user-info") || "{}")?.address || {}
-  );
   const location = useLocation();
   const navigate = useNavigate();
 
-  const { city, state, pin, landmark, street } = userAddress || {};
+  const user = JSON.parse(localStorage.getItem("user-info") || "{}");
+  const { city, state, pin, landmark, street } = user?.address || {};
   const { item, quantity = 1 } = location?.state || {};
   const [noItem, setNoItem] = useState(quantity);
 
@@ -24,14 +22,13 @@ const OrderPage = () => {
   const toggleAddressForm = () => setVisible((prev) => !prev);
   const redirectToLogin = () => navigate("/login");
 
-  const handleAddressAdded = (newAddress) => {
-    // Update localStorage and component state with the new address
+  const handleAddressAdded = () => {
+    // Update user-info with the new address
     const updatedUser = JSON.parse(localStorage.getItem("user-info") || "{}");
-    updatedUser.address = newAddress;
+    updatedUser.address = { street, landmark, city: "Kolkata", state: "West Bengal", pin };
     localStorage.setItem("user-info", JSON.stringify(updatedUser));
-    setUserAddress(newAddress); // Update state
     toast.success("Address added successfully.");
-    setVisible(false); // Hide the form
+    setVisible(false); // Hide the form after address is added
   };
 
   const placeOrder = async () => {
@@ -109,13 +106,9 @@ const OrderPage = () => {
             </ListGroup.Item>
             <ListGroup.Item>
               <strong>Quantity:</strong>
-              <Button onClick={handleSub} variant="success ms-3 py-1">
-                -
-              </Button>
+              <Button onClick={handleSub} variant="success ms-3 py-1">-</Button>
               <span className="mx-2 fs-3 border text-center px-3 pb-2">{noItem}</span>
-              <Button onClick={handleAdd} variant="success py-1">
-                +
-              </Button>
+              <Button onClick={handleAdd} variant="success py-1">+</Button>
             </ListGroup.Item>
             <ListGroup.Item>
               <strong>Price:</strong> ₹{item?.price || 0}
@@ -129,7 +122,7 @@ const OrderPage = () => {
 
       {/* Address Section */}
       <Row>
-        {street ? (
+        {user?.address ? (
           <Col>
             <Card className="shadow-sm mb-4">
               <Card.Body>

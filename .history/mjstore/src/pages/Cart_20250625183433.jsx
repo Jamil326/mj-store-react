@@ -32,6 +32,7 @@ const Cart = () => {
 
       if (res.ok) {
         updateCart(result.data.items || []);
+        fetchCartItems();
       } else {
         toast.warn(result.message || "Failed to fetch cart items.");
       }
@@ -77,7 +78,6 @@ const Cart = () => {
     }
   };
 
-  // Remove an item from the cart
   const handleRemoveFromCart = async (productId) => {
     const token = localStorage.getItem("token");
 
@@ -116,21 +116,15 @@ const Cart = () => {
     navigate("/checkout2", { state: { itemIds } });
   };
 
-  useEffect(() => {
-    fetchCartItems();
-  }, []);
-
-   useEffect(() => {
-    fetchCartItems();
-  }, [totalValue]);
-
+  
 
   return (
     <div>
       {items.length > 0 ? (
         <>
-          {/* Clear Cart Button */}
+          {/* Refresh and Clear Cart Buttons */}
           <div className="d-flex justify-content-between align-items-center p-3">
+           
             <Button onClick={handleClearCart} variant="danger">
               Clear Cart
             </Button>

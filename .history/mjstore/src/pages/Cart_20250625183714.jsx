@@ -120,11 +120,6 @@ const Cart = () => {
     fetchCartItems();
   }, []);
 
-   useEffect(() => {
-    fetchCartItems();
-  }, [totalValue]);
-
-
   return (
     <div>
       {items.length > 0 ? (

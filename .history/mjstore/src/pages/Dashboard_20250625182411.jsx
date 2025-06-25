@@ -27,7 +27,7 @@ const Dashboard = () => {
           throw new Error("Authorization token is missing. Please log in again.");
         }
 
-        const response = await fetch("https://mj-store.onrender.com/api/v1/user/me", {
+        const response = await fetch("https://.com/api/v1/me", {
           method: "GET",
           headers: {
             "Content-Type": "application/json",

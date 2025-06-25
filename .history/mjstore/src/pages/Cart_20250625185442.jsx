@@ -122,7 +122,7 @@ const Cart = () => {
 
    useEffect(() => {
     fetchCartItems();
-  }, [totalValue]);
+  }, [tota]);
 
 
   return (

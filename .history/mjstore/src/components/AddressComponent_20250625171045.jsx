@@ -1,30 +1,17 @@
 import { useState } from "react";
 import { toast } from "react-toastify";
-import { Button, Form, Container, Spinner } from "react-bootstrap";
+import { useNavigate } from "react-router-dom";
+import { Button, Form, Container } from "react-bootstrap";
 
-const AddressForm = ({ onAddressAdded }) => {
-  const westBengalCities = [
-    "Kolkata",
-    "Darjeeling",
-    "Siliguri",
-    "Asansol",
-    "Durgapur",
-    "Howrah",
-    "Hooghly",
-    "Kharagpur",
-    "Malda",
-    "Jalpaiguri",
-  ];
-
+const AddressForm = () => {
+  const navigate = useNavigate();
   const [address, setAddress] = useState({
     street: "",
     landmark: "",
-    city: "Kolkata",
+    city: "",
     pin: "",
-    state: "West Bengal",
+    state: "",
   });
-
-  const [loading, setLoading] = useState(false);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -36,18 +23,7 @@ const AddressForm = ({ onAddressAdded }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!address.street || !address.pin || !address.city || !address.landmark) {
-      toast.warn("All fields are required.");
-      return;
-    }
-
-    if (address.pin.length !== 6 || isNaN(address.pin)) {
-      toast.warn("Invalid pin code. Please enter a valid 6-digit pin code.");
-      return;
-    }
-
     try {
-      setLoading(true);
       const token = localStorage.getItem("token") || "";
       if (!token) throw new Error("Token is required");
 
@@ -65,11 +41,9 @@ const AddressForm = ({ onAddressAdded }) => {
       if (!res.ok) throw new Error(result.message);
 
       toast.success(result.message || "Address added successfully");
-      onAddressAdded(result.data); // Pass updated address to parent component
+      navigate("/login");
     } catch (error) {
       toast.error(error.message);
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -100,26 +74,14 @@ const AddressForm = ({ onAddressAdded }) => {
         </Form.Group>
 
         <Form.Group className="mb-3">
-          <Form.Label>State</Form.Label>
+          <Form.Label>City</Form.Label>
           <Form.Control
             type="text"
-            name="state"
-            value={address.state}
-            disabled
-            readOnly
-            placeholder="State"
+            name="city"
+            value={address.city}
+            onChange={handleChange}
+            placeholder="Enter your city"
           />
-        </Form.Group>
-
-        <Form.Group className="mb-3">
-          <Form.Label>City</Form.Label>
-          <Form.Select name="city" value={address.city} onChange={handleChange}>
-            {westBengalCities.map((city) => (
-              <option key={city} value={city}>
-                {city}
-              </option>
-            ))}
-          </Form.Select>
         </Form.Group>
 
         <Form.Group className="mb-3">
@@ -133,13 +95,19 @@ const AddressForm = ({ onAddressAdded }) => {
           />
         </Form.Group>
 
-        <Button
-          type="submit"
-          variant="primary"
-          className="w-100"
-          disabled={loading}
-        >
-          {loading ? <Spinner animation="border" size="sm" /> : "Add Address"}
+        <Form.Group className="mb-3">
+          <Form.Label>State</Form.Label>
+          <Form.Control
+            type="text"
+            name="state"
+            value={address.state}
+            onChange={handleChange}
+            placeholder="Enter your state"
+          />
+        </Form.Group>
+
+        <Button type="submit" variant="primary" className="w-100">
+          Add Address
         </Button>
       </Form>
     </Container>

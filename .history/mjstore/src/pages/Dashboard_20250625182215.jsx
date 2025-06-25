@@ -20,50 +20,33 @@ const Dashboard = () => {
   };
 
   useEffect(() => {
-    const fetchUserData = async () => {
-      try {
-        const token = localStorage.getItem("token");
-        if (!token) {
-          throw new Error("Authorization token is missing. Please log in again.");
-        }
+ const fetchUserData = async () => {
+  try {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      throw new Error("Authorization token is missing. Please log in again.");
+    }
 
-        const response = await fetch("https://mj-store.onrender.com/api/v1/user/me", {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-        });
+    const response = await fetch("https://your-api-url.com/api/v1/me", {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+    });
 
-        if (!response.ok) {
-          if (response.status === 401) {
-            handleLogout(); // Logout if unauthorized
-          }
-          throw new Error("Failed to fetch user data.");
-        }
+    if (!response.ok) {
+      throw new Error("Failed to fetch user data.");
+    }
 
-        const { status, message, data } = await response.json();
-
-        if (status !== "success") {
-          throw new Error(message || "Unexpected API response.");
-        }
-
-        // Flatten address details for easier rendering
-        const address = data.address || {};
-        setUser({
-          ...data,
-          city: address.city || "N/A",
-          pin: address.pin || "N/A",
-          landmark: address.landmark || "N/A",
-          state: address.state || "N/A",
-          street: address.street || "N/A",
-        });
-        setLoading(false);
-      } catch (error) {
-        toast.error(error.message);
-        navigate("/login");
-      }
-    };
+    const { data } = await response.json();
+    console.log(data); // Verify the response structure
+    setUser(data);
+  } catch (error) {
+    toast.error(error.message);
+    navigate("/login");
+  }
+};
 
     fetchUserData();
   }, [navigate]);

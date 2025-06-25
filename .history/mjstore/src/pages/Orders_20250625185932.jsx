@@ -46,7 +46,7 @@ const Orders = () => {
       });
 
       const result = await res.json();
-      console.log(result);
+      clg
       if (!res.ok) throw new Error(result.message);
 
       toast.success(result.message);

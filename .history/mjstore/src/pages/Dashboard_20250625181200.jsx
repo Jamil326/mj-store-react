@@ -15,6 +15,7 @@ const Dashboard = () => {
   const handleLogout = () => {
     setLogged(false);
     localStorage.removeItem("token");
+    localStorage.removeItem("user-info");
     toast.success("Logged out successfully.");
     navigate("/login");
   };
@@ -27,7 +28,7 @@ const Dashboard = () => {
           throw new Error("Authorization token is missing. Please log in again.");
         }
 
-        const response = await fetch("https://mj-store.onrender.com/api/v1/user/me", {
+        const response = await fetch("https://your-api-url.com/api/v1/me", {
           method: "GET",
           headers: {
             "Content-Type": "application/json",
@@ -42,16 +43,12 @@ const Dashboard = () => {
           throw new Error("Failed to fetch user data.");
         }
 
-        const { status, message, data } = await response.json();
-
-        if (status !== "success") {
-          throw new Error(message || "Unexpected API response.");
-        }
+        const userData = await response.json();
 
         // Flatten address details for easier rendering
-        const address = data.address || {};
+        const address = userData.address || {};
         setUser({
-          ...data,
+          ...userData,
           city: address.city || "N/A",
           pin: address.pin || "N/A",
           landmark: address.landmark || "N/A",
@@ -128,9 +125,6 @@ const Dashboard = () => {
                 </ListGroup.Item>
                 <ListGroup.Item className="bg-light">
                   <strong>State:</strong> {user.state}
-                </ListGroup.Item>
-                <ListGroup.Item className="bg-light">
-                  <strong>Created At:</strong> {new Date(user.createdAt).toLocaleString()}
                 </ListGroup.Item>
               </ListGroup>
             </Card.Body>

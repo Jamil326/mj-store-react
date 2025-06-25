@@ -9,66 +9,49 @@ import { UserContext } from "../context/userContext";
 const Dashboard = () => {
   const { logged, setLogged } = useContext(UserContext);
   const [user, setUser] = useState(null); // Use null to signify "loading" or "no data"
-  const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
   const handleLogout = () => {
     setLogged(false);
     localStorage.removeItem("token");
+    localStorage.removeItem("user-info");
     toast.success("Logged out successfully.");
     navigate("/login");
   };
 
   useEffect(() => {
-    const fetchUserData = async () => {
-      try {
-        const token = localStorage.getItem("token");
-        if (!token) {
-          throw new Error("Authorization token is missing. Please log in again.");
-        }
+    try {
+      const rawData = localStorage.getItem("user-info");
+      const person = rawData ? JSON.parse(rawData) : null;
 
-        const response = await fetch("https://mj-store.onrender.com/api/v1/user/me", {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-        });
-
-        if (!response.ok) {
-          if (response.status === 401) {
-            handleLogout(); // Logout if unauthorized
-          }
-          throw new Error("Failed to fetch user data.");
-        }
-
-        const { status, message, data } = await response.json();
-
-        if (status !== "success") {
-          throw new Error(message || "Unexpected API response.");
-        }
-
-        // Flatten address details for easier rendering
-        const address = data.address || {};
-        setUser({
-          ...data,
-          city: address.city || "N/A",
-          pin: address.pin || "N/A",
-          landmark: address.landmark || "N/A",
-          state: address.state || "N/A",
-          street: address.street || "N/A",
-        });
-        setLoading(false);
-      } catch (error) {
-        toast.error(error.message);
-        navigate("/login");
+      if (!person || typeof person !== "object") {
+        throw new Error("Invalid user data. Please log in again.");
       }
-    };
 
-    fetchUserData();
+      // Flatten address details for easier rendering
+      const address = person.address || {};
+      setUser({
+        ...person,
+        city: address.city || "N/A",
+        pin: address.pin || "N/A",
+        landmark: address.landmark || "N/A",
+        state: address.state || "N/A",
+        street: address.street || "N/A",
+      });
+    } catch (error) {
+      toast.error(error.message);
+      navigate("/login");
+    }
   }, [navigate]);
 
-  if (loading) {
+  // Redirect logged-out users
+  useEffect(() => {
+    if (!logged) {
+      navigate("/login");
+    }
+  }, [logged, navigate]);
+
+  if (!user) {
     return (
       <Container className="my-5 text-center">
         <h3>Loading user data...</h3>
@@ -128,9 +111,6 @@ const Dashboard = () => {
                 </ListGroup.Item>
                 <ListGroup.Item className="bg-light">
                   <strong>State:</strong> {user.state}
-                </ListGroup.Item>
-                <ListGroup.Item className="bg-light">
-                  <strong>Created At:</strong> {new Date(user.createdAt).toLocaleString()}
                 </ListGroup.Item>
               </ListGroup>
             </Card.Body>
