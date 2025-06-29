@@ -28,7 +28,7 @@ const ProductCard = ({ product }) => {
   };
 
   return (
-    <Col xs={12} sm={6} lg={9} id={_id} className="mx-auto mb-4">
+    <Col xs={12} sm={6} lg={3} id={_id} className="mx-auto mb-4">
       <Card className="shadow-sm rounded h-100 border-0">
         {/* Product Image */}
         <Card.Img

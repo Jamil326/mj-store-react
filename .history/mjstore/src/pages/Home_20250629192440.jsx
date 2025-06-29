@@ -144,7 +144,7 @@ const Home = () => {
               xs={6}
               sm={4}
               md={3}
-              
+              lg=
               className="d-flex justify-content-center"
               onClick={() => handleProductClick(product._id)}
             >

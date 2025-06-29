@@ -143,8 +143,7 @@ const Home = () => {
               key={`${product._id}-${index}`}
               xs={6}
               sm={4}
-              md={3}
-              
+              md={12}
               className="d-flex justify-content-center"
               onClick={() => handleProductClick(product._id)}
             >
