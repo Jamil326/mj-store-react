@@ -25,9 +25,8 @@ const Footer = () => {
       if (!response.ok) {
         throw new Error("Failed to fetch cart count.");
       }
-    
+    console.log();
       const { data } = await response.json();
-      console.log(data);
       setCartItemCount(data?.count || 0);
     } catch (error) {
       console.error("Error fetching cart count:", error.message);

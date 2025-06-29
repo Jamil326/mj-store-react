@@ -11,7 +11,7 @@ const Footer = () => {
   // Fetch cart count from the API
   const fetchCartCount = async () => {
     const token = localStorage.getItem("token");
-    const apiUrl = "https://mj-store.onrender.com/api/v1/user/cart/fatch";
+    const apiUrl = "https://mj-store.onrender.com/api/v1/user/cart/";
 
     try {
       const response = await fetch(apiUrl, {
@@ -25,9 +25,8 @@ const Footer = () => {
       if (!response.ok) {
         throw new Error("Failed to fetch cart count.");
       }
-    
+
       const { data } = await response.json();
-      console.log(data);
       setCartItemCount(data?.count || 0);
     } catch (error) {
       console.error("Error fetching cart count:", error.message);

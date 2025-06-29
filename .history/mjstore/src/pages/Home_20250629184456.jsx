@@ -115,7 +115,7 @@ const Home = () => {
         <Row className="justify-content-center">
           {categories.map((category, index) => (
             <Col
-              key={`${category.name}-${index}`}
+              key={index}
               xs={4}
               sm={3}
               className="text-center p-2 category-card"
@@ -137,9 +137,9 @@ const Home = () => {
       {/* Product Grid Section */}
       <Container fluid className="mt-4">
         <Row className="g-4">
-          {products.map((product, index) => (
+          {products.map((product) => (
             <Col
-              key={`${product._id}-${index}`}
+              key={product._id}
               xs={6}
               sm={4}
               md={3}
