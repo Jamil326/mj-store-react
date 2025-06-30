@@ -18,7 +18,7 @@ const Home = () => {
   const navigate = useNavigate();
 
   const [allProducts, setAllProducts] = useState([]); // Locally available products
-  const [filteredProducts, setFilteredProducts] = useState([]); // Data to display
+  const [filteredProducts, setFilteredProducts] = useState([]); // Search and sort results
   const [page, setPage] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
   const [hasMore, setHasMore] = useState(true);
@@ -69,8 +69,7 @@ const Home = () => {
   const searchProductsFromAPI = async (query) => {
     try {
       const encodedQuery = encodeURIComponent(query);
-      console.log(typeof encodedQuery);
-      const apiUrl = `https://mj-store.onrender.com/api/v1/product/search?term=${encodedQuery}`;
+      const apiUrl = `https://mj-store.onrender.com/api/v1/product/get/product?search=${encodedQuery}`;
       const res = await fetch(apiUrl, { method: "GET" });
       const data = await res.json();
 
@@ -100,7 +99,7 @@ const Home = () => {
         searchProductsFromAPI(query); // Call API if no local results
       }
     } else {
-      setFilteredProducts(allProducts); // Reset to all local products if query is cleared
+      setFilteredProducts(allProducts);
     }
   };
 

@@ -17,8 +17,8 @@ import { toast } from "react-toastify";
 const Home = () => {
   const navigate = useNavigate();
 
-  const [allProducts, setAllProducts] = useState([]); // Locally available products
-  const [filteredProducts, setFilteredProducts] = useState([]); // Data to display
+  const [allProducts, setAllProducts] = useState([]); // Store all products for client-side search
+  const [filteredProducts, setFilteredProducts] = useState([]); // Products displayed after filtering
   const [page, setPage] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
   const [hasMore, setHasMore] = useState(true);
@@ -39,22 +39,21 @@ const Home = () => {
 
     try {
       const limit = 16;
-      const apiUrl = `https://mj-store.onrender.com/api/v1/product/get/product?page=${page}&limit=${limit}`;
+      const apiUrl = `https://mj-store.onrender.com/api/v1/product/get/product?page=${page}&limit=${limit}&sort=${sortOption}`;
       const res = await fetch(apiUrl, { method: "GET" });
       const data = await res.json();
 
       if (res.ok && data?.data?.getProduct) {
         const fetchedProducts = data.data.getProduct;
 
-        if (reset) {
-          setAllProducts(fetchedProducts);
-          setFilteredProducts(fetchedProducts);
+        if (fetchedProducts.length === 0) {
+          setHasMore(false);
         } else {
-          setAllProducts((prev) => [...prev, ...fetchedProducts]);
-          setFilteredProducts((prev) => [...prev, ...fetchedProducts]);
+          setAllProducts((prev) => (reset ? fetchedProducts : [...prev, ...fetchedProducts]));
+          setFilteredProducts((prev) =>
+            reset ? fetchedProducts : [...prev, ...fetchedProducts]
+          );
         }
-
-        if (fetchedProducts.length < limit) setHasMore(false);
       } else {
         toast.error("Failed to fetch products.");
         setHasMore(false);
@@ -66,70 +65,29 @@ const Home = () => {
     }
   };
 
-  const searchProductsFromAPI = async (query) => {
-    try {
-      const encodedQuery = encodeURIComponent(query);
-      console.log(typeof encodedQuery);
-      const apiUrl = `https://mj-store.onrender.com/api/v1/product/search?term=${encodedQuery}`;
-      const res = await fetch(apiUrl, { method: "GET" });
-      const data = await res.json();
+  useEffect(() => {
+    fetchProducts(true); // Initial fetch with reset
+  }, [sortOption]);
 
-      if (res.ok && data?.data?.getProduct) {
-        setFilteredProducts(data.data.getProduct);
-      } else {
-        toast.warn("No products found for the given query.");
-        setFilteredProducts([]);
-      }
-    } catch (error) {
-      toast.error("Error occurred while searching products.");
-    }
-  };
-
-  const handleSearchChange = (e) => {
-    const query = e.target.value.trim();
-    setSearchQuery(query);
-
-    if (query) {
-      const localResults = allProducts.filter((product) =>
-        product.name.toLowerCase().includes(query.toLowerCase())
+  useEffect(() => {
+    if (searchQuery) {
+      // Client-side filtering for faster results
+      const filtered = allProducts.filter((product) =>
+        product.name.toLowerCase().includes(searchQuery.toLowerCase())
       );
+      setFilteredProducts(filtered);
 
-      if (localResults.length > 0) {
-        setFilteredProducts(localResults);
-      } else {
-        searchProductsFromAPI(query); // Call API if no local results
+      // Call API if the searchQuery exceeds local product data
+      if (filtered.length === 0) {
+        fetchProducts(true);
       }
     } else {
-      setFilteredProducts(allProducts); // Reset to all local products if query is cleared
+      setFilteredProducts(allProducts);
     }
-  };
-
-  const handleSortChange = (sort) => {
-    setSortOption(sort);
-
-    const sortedProducts = [...filteredProducts];
-
-    switch (sort) {
-      case "low-to-high":
-        sortedProducts.sort((a, b) => a.price - b.price);
-        break;
-      case "high-to-low":
-        sortedProducts.sort((a, b) => b.price - a.price);
-        break;
-      default:
-        // Default: Leave products in their original fetched order
-        break;
-    }
-
-    setFilteredProducts(sortedProducts);
-  };
+  }, [searchQuery, allProducts]);
 
   useEffect(() => {
-    fetchProducts(true); // Initial product fetch
-  }, []);
-
-  useEffect(() => {
-    if (page > 1) fetchProducts(); // Fetch more products on pagination
+    fetchProducts();
   }, [page]);
 
   useEffect(() => {
@@ -154,6 +112,16 @@ const Home = () => {
     if (selectedProduct) {
       navigate("/productDetails", { state: { product: selectedProduct } });
     }
+  };
+
+  const handleSearchChange = (e) => {
+    setSearchQuery(e.target.value);
+  };
+
+  const handleSortChange = (sort) => {
+    setSortOption(sort);
+    setPage(1);
+    setHasMore(true);
   };
 
   return (

@@ -17,8 +17,8 @@ import { toast } from "react-toastify";
 const Home = () => {
   const navigate = useNavigate();
 
-  const [allProducts, setAllProducts] = useState([]); // Locally available products
-  const [filteredProducts, setFilteredProducts] = useState([]); // Data to display
+  const [allProducts, setAllProducts] = useState([]);
+  const [filteredProducts, setFilteredProducts] = useState([]);
   const [page, setPage] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
   const [hasMore, setHasMore] = useState(true);
@@ -33,13 +33,10 @@ const Home = () => {
   ];
 
   const fetchProducts = async (reset = false) => {
-    if (!hasMore) return;
-
     setIsLoading(true);
-
     try {
       const limit = 16;
-      const apiUrl = `https://mj-store.onrender.com/api/v1/product/get/product?page=${page}&limit=${limit}`;
+      const apiUrl = `https://mj-store.onrender.com/api/v1/product/get/product?page=${page}&limit=${limit}&sort=${sortOption}`;
       const res = await fetch(apiUrl, { method: "GET" });
       const data = await res.json();
 
@@ -69,8 +66,7 @@ const Home = () => {
   const searchProductsFromAPI = async (query) => {
     try {
       const encodedQuery = encodeURIComponent(query);
-      console.log(typeof encodedQuery);
-      const apiUrl = `https://mj-store.onrender.com/api/v1/product/search?term=${encodedQuery}`;
+      const apiUrl = `https://mj-store.onrender.com/api/v1/product/get/product?search=${encodedQuery}&sort=${sortOption}`;
       const res = await fetch(apiUrl, { method: "GET" });
       const data = await res.json();
 
@@ -86,7 +82,7 @@ const Home = () => {
   };
 
   const handleSearchChange = (e) => {
-    const query = e.target.value.trim();
+    const query = e.target.value;
     setSearchQuery(query);
 
     if (query) {
@@ -100,36 +96,23 @@ const Home = () => {
         searchProductsFromAPI(query); // Call API if no local results
       }
     } else {
-      setFilteredProducts(allProducts); // Reset to all local products if query is cleared
+      setFilteredProducts(allProducts);
     }
   };
 
   const handleSortChange = (sort) => {
     setSortOption(sort);
-
-    const sortedProducts = [...filteredProducts];
-
-    switch (sort) {
-      case "low-to-high":
-        sortedProducts.sort((a, b) => a.price - b.price);
-        break;
-      case "high-to-low":
-        sortedProducts.sort((a, b) => b.price - a.price);
-        break;
-      default:
-        // Default: Leave products in their original fetched order
-        break;
-    }
-
-    setFilteredProducts(sortedProducts);
+    setPage(1);
+    setHasMore(true);
+    fetchProducts(true); // Reset products on sort change
   };
 
   useEffect(() => {
-    fetchProducts(true); // Initial product fetch
-  }, []);
+    fetchProducts(true); // Fetch initial products
+  }, [sortOption]);
 
   useEffect(() => {
-    if (page > 1) fetchProducts(); // Fetch more products on pagination
+    if (page > 1) fetchProducts();
   }, [page]);
 
   useEffect(() => {

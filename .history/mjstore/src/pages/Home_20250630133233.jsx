@@ -70,7 +70,7 @@ const Home = () => {
     try {
       const encodedQuery = encodeURIComponent(query);
       console.log(typeof encodedQuery);
-      const apiUrl = `https://mj-store.onrender.com/api/v1/product/search?term=${encodedQuery}`;
+      const apiUrl = `https://mj-store.onrender.com/api/v1/product/search?query=${encodedQuery}`;
       const res = await fetch(apiUrl, { method: "GET" });
       const data = await res.json();
 

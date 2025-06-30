@@ -17,9 +17,8 @@ import { toast } from "react-toastify";
 const Home = () => {
   const navigate = useNavigate();
 
-  const [allProducts, setAllProducts] = useState([]); // Locally available products
-  const [filteredProducts, setFilteredProducts] = useState([]); // Data to display
   const [page, setPage] = useState(1);
+  const [products, setProducts] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [hasMore, setHasMore] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
@@ -32,29 +31,27 @@ const Home = () => {
     { name: "All", icon: <GiClothes /> },
   ];
 
-  const fetchProducts = async (reset = false) => {
+  const fetchProducts = async () => {
     if (!hasMore) return;
 
     setIsLoading(true);
 
     try {
       const limit = 16;
-      const apiUrl = `https://mj-store.onrender.com/api/v1/product/get/product?page=${page}&limit=${limit}`;
+      const apiUrl = `https://mj-store.onrender.com/api/v1/product/get/product?page=${page}&limit=${limit}&search=${searchQuery}&sort=${sortOption}`;
       const res = await fetch(apiUrl, { method: "GET" });
       const data = await res.json();
 
       if (res.ok && data?.data?.getProduct) {
         const fetchedProducts = data.data.getProduct;
 
-        if (reset) {
-          setAllProducts(fetchedProducts);
-          setFilteredProducts(fetchedProducts);
+        if (fetchedProducts.length === 0) {
+          setHasMore(false);
         } else {
-          setAllProducts((prev) => [...prev, ...fetchedProducts]);
-          setFilteredProducts((prev) => [...prev, ...fetchedProducts]);
+          setProducts((prevProducts) =>
+            page === 1 ? fetchedProducts : [...prevProducts, ...fetchedProducts]
+          );
         }
-
-        if (fetchedProducts.length < limit) setHasMore(false);
       } else {
         toast.error("Failed to fetch products.");
         setHasMore(false);
@@ -66,72 +63,18 @@ const Home = () => {
     }
   };
 
-  const searchProductsFromAPI = async (query) => {
-    try {
-      const encodedQuery = encodeURIComponent(query);
-      console.log(typeof encodedQuery);
-      const apiUrl = `https://mj-store.onrender.com/api/v1/product/search?term=${encodedQuery}`;
-      const res = await fetch(apiUrl, { method: "GET" });
-      const data = await res.json();
-
-      if (res.ok && data?.data?.getProduct) {
-        setFilteredProducts(data.data.getProduct);
-      } else {
-        toast.warn("No products found for the given query.");
-        setFilteredProducts([]);
-      }
-    } catch (error) {
-      toast.error("Error occurred while searching products.");
-    }
-  };
-
-  const handleSearchChange = (e) => {
-    const query = e.target.value.trim();
-    setSearchQuery(query);
-
-    if (query) {
-      const localResults = allProducts.filter((product) =>
-        product.name.toLowerCase().includes(query.toLowerCase())
-      );
-
-      if (localResults.length > 0) {
-        setFilteredProducts(localResults);
-      } else {
-        searchProductsFromAPI(query); // Call API if no local results
-      }
-    } else {
-      setFilteredProducts(allProducts); // Reset to all local products if query is cleared
-    }
-  };
-
-  const handleSortChange = (sort) => {
-    setSortOption(sort);
-
-    const sortedProducts = [...filteredProducts];
-
-    switch (sort) {
-      case "low-to-high":
-        sortedProducts.sort((a, b) => a.price - b.price);
-        break;
-      case "high-to-low":
-        sortedProducts.sort((a, b) => b.price - a.price);
-        break;
-      default:
-        // Default: Leave products in their original fetched order
-        break;
-    }
-
-    setFilteredProducts(sortedProducts);
-  };
+  // Fetch products on page, searchQuery, or sortOption change
+  useEffect(() => {
+    setPage(1);
+    setProducts([]);
+    setHasMore(true);
+  }, [searchQuery, sortOption]);
 
   useEffect(() => {
-    fetchProducts(true); // Initial product fetch
-  }, []);
+    fetchProducts();
+  }, [page, searchQuery, sortOption]);
 
-  useEffect(() => {
-    if (page > 1) fetchProducts(); // Fetch more products on pagination
-  }, [page]);
-
+  // Intersection Observer for infinite scrolling
   useEffect(() => {
     const observer = new IntersectionObserver(
       ([entry]) => {
@@ -150,10 +93,18 @@ const Home = () => {
   }, [loaderRef, hasMore, isLoading]);
 
   const handleProductClick = (id) => {
-    const selectedProduct = allProducts.find((product) => product._id === id);
+    const selectedProduct = products.find((product) => product._id === id);
     if (selectedProduct) {
       navigate("/productDetails", { state: { product: selectedProduct } });
     }
+  };
+
+  const handleSearchChange = (e) => {
+    setSearchQuery(e.target.value);
+  };
+
+  const handleSortChange = (sort) => {
+    setSortOption(sort);
   };
 
   return (
@@ -218,7 +169,7 @@ const Home = () => {
       {/* Product Grid Section */}
       <Container fluid className="mt-4">
         <Row className="g-4">
-          {filteredProducts.map((product, index) => (
+          {products.map((product, index) => (
             <Col
               key={`${product._id}-${index}`}
               xs={6}
