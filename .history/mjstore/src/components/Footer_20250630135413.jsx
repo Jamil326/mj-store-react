@@ -36,7 +36,7 @@ const Footer = () => {
   };
 
   useEffect(() => {
-    
+    fetchCartCount();
   }, []);
 
   return (
