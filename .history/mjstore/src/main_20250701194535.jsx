@@ -2,6 +2,7 @@ import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import App from './App.jsx';
+import NetworkProvider from "./context/NetworkProvider.jsx"; // Adjust path as needed
 
 
 import { createBrowserRouter,
@@ -107,6 +108,6 @@ createRoot(document.getElementById('root')).render(
   <StrictMode>
   
       <RouterProvider router = {router}/>
-  
+  </NetworkProvider>
   </StrictMode>
 )

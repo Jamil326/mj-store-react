@@ -13,20 +13,12 @@ const Banner = () => {
   return (
     <Container fluid className="py-3 bg-light">
       <Card className="shadow-sm border-0">
-        <Card.Body className="d-flex justify-content-center align-items-center">
+        <Card.Body className="d-flex justify-content-center align-items-center gap-5">
           {features.map((feature, index) => (
-            <React.Fragment key={index}>
-              {index > 0 && (
-                <div
-                  className="border-start mx-3"
-                  style={{ height: "50px", width: "1px", backgroundColor: "#ccc" }}
-                ></div>
-              )}
-              <div className="d-flex flex-column align-items-center">
-                <div className="fs-2 text-success">{feature.icon}</div>
-                <div className="mt-2 fw-bold text-dark text-center">{feature.text}</div>
-              </div>
-            </React.Fragment>
+            <div key={index} className="d-flex flex-column align-items-center">
+              <div className="fs-2 text-success">{feature.icon}</div>
+              <div className="mt-2 fw-bold text-dark text-center">{feature.text}</div>
+            </div>
           ))}
         </Card.Body>
       </Card>

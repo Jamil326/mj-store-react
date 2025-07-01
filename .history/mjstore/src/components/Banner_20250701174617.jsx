@@ -16,7 +16,7 @@ const Banner = () => {
         <Card.Body className="d-flex justify-content-center align-items-center">
           {features.map((feature, index) => (
             <React.Fragment key={index}>
-              {index > 0 && (
+              {i ndex > 0 && (
                 <div
                   className="border-start mx-3"
                   style={{ height: "50px", width: "1px", backgroundColor: "#ccc" }}

@@ -1,5 +1,5 @@
 import { Outlet } from "react-router-dom";
-import { ToastContainer,toast } from "react-toastify";
+import { ToastContainer } from "react-toastify";
 import { CartProvider } from "./context/CartContext";
 import UserProvider from "./context/userContext";
 import { useEffect } from 'react';
