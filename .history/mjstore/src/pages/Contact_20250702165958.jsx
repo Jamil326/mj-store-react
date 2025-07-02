@@ -32,7 +32,7 @@ const Contact = () => {
                 <AiOutlineMail size="2rem" className="me-3 text-primary" />
                 <div>
                   <p className="mb-1 fw-bold">Email</p>
-                  <p className="text-dark mb-0">mjstorehelp786@gmail.com</p>
+                  <p className="text-dark mb-0">mj@gmail.com</p>
                 </div>
               </div>
               <hr />
