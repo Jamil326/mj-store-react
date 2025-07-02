@@ -36,7 +36,6 @@ const Home = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [sortOption, setSortOption] = useState("default");
   const loaderRef = useRef(null);
-  const firstLoad = useRef(true);
   const topRef = useRef(null);
   const searchTimeout = useRef(null);
 
@@ -143,10 +142,7 @@ const Home = () => {
   };
 
   useEffect(() => {
-    if (firstLoad.current) {
-      fetchProducts(true);
-      firstLoad.current = false;
-    }
+    fetchProducts(true);
   }, [fetchProducts]);
 
   useEffect(() => {

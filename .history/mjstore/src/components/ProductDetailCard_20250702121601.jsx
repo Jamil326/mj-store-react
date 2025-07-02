@@ -72,26 +72,24 @@ const ProductDetailCard = ({ Product = {} }) => {
             spaceBetween={10}
             slidesPerView={1}
             onSlideChange={(swiper) => setCurrentIndex(swiper.activeIndex)}
-            className="shadow rounded mb-3"
-            style={{ width: "100%" }}
+            className="shadow rounded mb-4"
           >
             {image.map((img, index) => (
               <SwiperSlide key={index}>
-                <div className="text-center">
-                  <Image
-                    src={img.url || "/placeholder.jpg"}
-                    fluid
-                    className="rounded"
-                    style={{ height: "320px", objectFit: "contain", cursor: "zoom-in", width: "100%" }}
-                    loading="lazy"
-                    onDoubleClick={openModal}
-                  />
-                </div>
+                <Image
+                  src={img.url || "/placeholder.jpg"}
+                  fluid
+                  thumbnail
+                  className="p-3"
+                  style={{ maxHeight: "350px", objectFit: "contain", cursor: "zoom-in" }}
+                  loading="lazy"
+                  onDoubleClick={openModal}
+                />
               </SwiperSlide>
             ))}
           </Swiper>
 
-          <Row className="mb-3 justify-content-center">
+          <Row className="mb-4">
             {image.map((img, index) => (
               <Image
                 key={index}
@@ -99,10 +97,15 @@ const ProductDetailCard = ({ Product = {} }) => {
                 alt={`Thumbnail ${index + 1}`}
                 fluid
                 loading="lazy"
-                className={`rounded shadow-sm mx-1 ${
+                className={`rounded shadow-sm ${
                   currentIndex === index ? "border border-primary" : ""
                 }`}
-                style={{ width: "65px", height: "60px", objectFit: "cover", cursor: "pointer" }}
+                style={{
+                  width: "70px",
+                  height: "65px",
+                  objectFit: "cover",
+                  cursor: "pointer",
+                }}
                 onClick={() => handleThumbnailClick(index)}
               />
             ))}

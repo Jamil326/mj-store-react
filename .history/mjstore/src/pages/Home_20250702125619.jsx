@@ -8,7 +8,6 @@ import {
   Dropdown,
   Card,
   Placeholder,
-  Button
 } from "react-bootstrap";
 import { FaHeadphones, FaTools } from "react-icons/fa";
 import { GiClothes } from "react-icons/gi";
@@ -36,9 +35,7 @@ const Home = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [sortOption, setSortOption] = useState("default");
   const loaderRef = useRef(null);
-  const firstLoad = useRef(true);
-  const topRef = useRef(null);
-  const searchTimeout = useRef(null);
+  const isInitialMount = useRef(true);
 
   const categories = [
     { name: "Hardware", icon: <FaTools /> },
@@ -46,30 +43,29 @@ const Home = () => {
     { name: "All", icon: <GiClothes /> },
   ];
 
-  const fetchProducts = useCallback(async (reset = false, newPage = 1) => {
+  const fetchProducts = useCallback(async (reset = false) => {
     if (isLoading || (!hasMore && !reset)) return;
 
     setIsLoading(true);
     const limit = 16;
+    const targetPage = reset ? 1 : page;
 
     try {
-      const apiUrl = `https://mj-store.onrender.com/api/v1/product/get/product?page=${newPage}&limit=${limit}`;
+      const apiUrl = `https://mj-store.onrender.com/api/v1/product/get/product?page=${targetPage}&limit=${limit}`;
       const res = await fetch(apiUrl);
       const data = await res.json();
 
       if (res.ok && data?.data?.getProduct) {
-        const fetchedProducts = data.data.getProduct.map(p => ({ ...p, rating: 4 }));
-
+        const fetchedProducts = data.data.getProduct;
         if (reset) {
           setAllProducts(fetchedProducts);
           setFilteredProducts(fetchedProducts);
+          setPage(1);
           setHasMore(fetchedProducts.length === limit);
-          setPage(2);
         } else {
           setAllProducts((prev) => [...prev, ...fetchedProducts]);
           setFilteredProducts((prev) => [...prev, ...fetchedProducts]);
           setHasMore(fetchedProducts.length === limit);
-          setPage(prev => prev + 1);
         }
       } else {
         toast.error("Failed to fetch products.");
@@ -80,7 +76,7 @@ const Home = () => {
     } finally {
       setIsLoading(false);
     }
-  }, [hasMore, isLoading]);
+  }, [page, hasMore, isLoading]);
 
   const searchProductsFromAPI = async (query) => {
     try {
@@ -90,8 +86,7 @@ const Home = () => {
       const data = await res.json();
 
       if (res.ok && data?.data?.getProduct) {
-        const searched = data.data.getProduct.map(p => ({ ...p, rating: 4 }));
-        setFilteredProducts(searched);
+        setFilteredProducts(data.data.getProduct);
       } else {
         toast.warn("No products found for the given query.");
         setFilteredProducts([]);
@@ -105,23 +100,19 @@ const Home = () => {
     const query = e.target.value.trim();
     setSearchQuery(query);
 
-    clearTimeout(searchTimeout.current);
+    if (query) {
+      const localResults = allProducts.filter((product) =>
+        product.name.toLowerCase().includes(query.toLowerCase())
+      );
 
-    searchTimeout.current = setTimeout(() => {
-      if (query) {
-        const localResults = allProducts.filter((product) =>
-          product.name.toLowerCase().includes(query.toLowerCase())
-        );
-
-        if (localResults.length > 0) {
-          setFilteredProducts(localResults);
-        } else {
-          searchProductsFromAPI(query);
-        }
+      if (localResults.length > 0) {
+        setFilteredProducts(localResults);
       } else {
-        setFilteredProducts(allProducts);
+        searchProductsFromAPI(query);
       }
-    }, 500);
+    } else {
+      setFilteredProducts(allProducts);
+    }
   };
 
   const handleSortChange = (sort) => {
@@ -143,17 +134,20 @@ const Home = () => {
   };
 
   useEffect(() => {
-    if (firstLoad.current) {
-      fetchProducts(true);
-      firstLoad.current = false;
-    }
+    fetchProducts(true);
   }, [fetchProducts]);
+
+  useEffect(() => {
+    if (page > 1 && !isInitialMount.current) {
+      fetchProducts();
+    }
+  }, [page, fetchProducts]);
 
   useEffect(() => {
     const observer = new IntersectionObserver(
       (entries) => {
         if (entries[0].isIntersecting && hasMore && !isLoading) {
-          fetchProducts(false, page);
+          setPage((prev) => prev + 1);
         }
       },
       { threshold: 1.0 }
@@ -165,7 +159,11 @@ const Home = () => {
     return () => {
       if (currentLoader) observer.unobserve(currentLoader);
     };
-  }, [hasMore, isLoading, fetchProducts, page]);
+  }, [hasMore, isLoading]);
+
+  useEffect(() => {
+    isInitialMount.current = false;
+  }, []);
 
   const handleProductClick = (id) => {
     const selectedProduct = allProducts.find((product) => product._id === id);
@@ -174,16 +172,8 @@ const Home = () => {
     }
   };
 
-  const scrollToTop = () => {
-    if (topRef.current) {
-      topRef.current.scrollIntoView({ behavior: "smooth" });
-    }
-  };
-
   return (
     <div className="d-flex flex-column bg-light">
-      <div ref={topRef} />
-
       <Container fluid className="py-3 bg-white shadow-sm sticky-top">
         <Row className="align-items-center">
           <Col xs={12} sm={6}>
@@ -232,31 +222,31 @@ const Home = () => {
 
       <Container fluid className="mt-4">
         <Row className="g-4">
-          {filteredProducts.map((product, index) => (
-            <Col
-              key={`${product._id}-${index}`}
-              xs={6}
-              sm={4}
-              md={3}
-              className="d-flex justify-content-center"
-              onClick={() => handleProductClick(product._id)}
-            >
-              <ProductCard product={product} />
-            </Col>
-          ))}
-          {isLoading && [...Array(4)].map((_, i) => (
-            <Col key={i} xs={6} sm={4} md={3} className="d-flex justify-content-center">
-              <SkeletonCard />
-            </Col>
-          ))}
+          {isLoading && filteredProducts.length === 0
+            ? Array.from({ length: 8 }).map((_, index) => (
+                <Col key={index} xs={6} sm={4} md={3} className="d-flex justify-content-center">
+                  <SkeletonCard />
+                </Col>
+              ))
+            : filteredProducts.map((product, index) => (
+                <Col
+                  key={`${product._id}-${index}`}
+                  xs={6}
+                  sm={4}
+                  md={3}
+                  className="d-flex justify-content-center"
+                  onClick={() => handleProductClick(product._id)}
+                >
+                  <ProductCard product={product} />
+                </Col>
+              ))}
         </Row>
+        {isLoading && filteredProducts.length > 0 && (
+          <div className="text-center py-3">
+            <span className="text-muted small">Loading more...</span>
+          </div>
+        )}
         <div ref={loaderRef} style={{ height: "1px" }} />
-
-        <div className="text-center my-4">
-          <Button variant="secondary" onClick={scrollToTop}>
-            Back to Top
-          </Button>
-        </div>
       </Container>
     </div>
   );

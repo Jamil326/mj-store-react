@@ -72,7 +72,7 @@ const ProductDetailCard = ({ Product = {} }) => {
             spaceBetween={10}
             slidesPerView={1}
             onSlideChange={(swiper) => setCurrentIndex(swiper.activeIndex)}
-            className="shadow rounded mb-3"
+            className="shadow rounded mb-4"
             style={{ width: "100%" }}
           >
             {image.map((img, index) => (
@@ -82,7 +82,7 @@ const ProductDetailCard = ({ Product = {} }) => {
                     src={img.url || "/placeholder.jpg"}
                     fluid
                     className="rounded"
-                    style={{ height: "320px", objectFit: "contain", cursor: "zoom-in", width: "100%" }}
+                    style={{ height: "420px", objectFit: "cover", cursor: "zoom-in", width: "100%" }}
                     loading="lazy"
                     onDoubleClick={openModal}
                   />
@@ -91,7 +91,7 @@ const ProductDetailCard = ({ Product = {} }) => {
             ))}
           </Swiper>
 
-          <Row className="mb-3 justify-content-center">
+          <Row className="mb-4 justify-content-center">
             {image.map((img, index) => (
               <Image
                 key={index}
@@ -102,7 +102,7 @@ const ProductDetailCard = ({ Product = {} }) => {
                 className={`rounded shadow-sm mx-1 ${
                   currentIndex === index ? "border border-primary" : ""
                 }`}
-                style={{ width: "65px", height: "60px", objectFit: "cover", cursor: "pointer" }}
+                style={{ width: "70px", height: "65px", objectFit: "cover", cursor: "pointer" }}
                 onClick={() => handleThumbnailClick(index)}
               />
             ))}

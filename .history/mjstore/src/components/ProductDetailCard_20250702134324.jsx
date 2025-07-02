@@ -82,7 +82,7 @@ const ProductDetailCard = ({ Product = {} }) => {
                     src={img.url || "/placeholder.jpg"}
                     fluid
                     className="rounded"
-                    style={{ height: "320px", objectFit: "contain", cursor: "zoom-in", width: "100%" }}
+                    style={{ height: "320px", objectFit: "cover", cursor: "zoom-in", width: "100%" }}
                     loading="lazy"
                     onDoubleClick={openModal}
                   />

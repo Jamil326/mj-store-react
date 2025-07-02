@@ -1,16 +1,11 @@
-import React, { useMemo } from "react";
+import React from "react";
 import { Card, Col } from "react-bootstrap";
 import { FaStar, FaStarHalfAlt, FaRegStar } from "react-icons/fa";
 
 const ProductCard = ({ product }) => {
   const { _id, name, price, title, image } = product;
 
-  // Generate a random rating once using useMemo
-  const randomRating = useMemo(() => {
-    const min = 3.8;
-    const max = 4.8;
-    return +(Math.random() * (max - min) + min).toFixed(1);
-  }, []);
+  const fixedRating = 4.0; // fixed rating for all products
 
   const renderStars = (rating) => {
     const fullStars = Math.floor(rating);
@@ -44,8 +39,8 @@ const ProductCard = ({ product }) => {
           <Card.Title className="text-truncate fw-bold">{name}</Card.Title>
           <Card.Subtitle className="text-muted text-truncate">{title}</Card.Subtitle>
           <div className="d-flex align-items-center mt-2">
-            <span className="me-2">{renderStars(randomRating)}</span>
-            <span className="fw-bold text-dark fs-6">({randomRating})</span>
+            <span className="me-2">{renderStars(fixedRating)}</span>
+            <span className="fw-bold text-dark fs-6">({fixedRating})</span>
           </div>
           <Card.Text className="mt-2 text-success fw-bold">
             ₹{price}

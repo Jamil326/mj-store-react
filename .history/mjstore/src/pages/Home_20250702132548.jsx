@@ -16,7 +16,7 @@ import ProductCard from "../components/ProductCard";
 import Banner from '../components/Banner';
 import { toast } from "react-toastify";
 
-const SkeletonCard = () => (
+const SkeletonCard = React.memo(() => (
   <Card className="p-2 shadow-sm w-100">
     <Placeholder as={Card.Img} animation="wave" style={{ height: '180px' }} />
     <Card.Body>
@@ -24,7 +24,7 @@ const SkeletonCard = () => (
       <Placeholder animation="wave" xs={6} className="mt-2" />
     </Card.Body>
   </Card>
-);
+));
 
 const Home = () => {
   const navigate = useNavigate();
@@ -36,7 +36,6 @@ const Home = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [sortOption, setSortOption] = useState("default");
   const loaderRef = useRef(null);
-  const firstLoad = useRef(true);
   const topRef = useRef(null);
   const searchTimeout = useRef(null);
 
@@ -101,7 +100,7 @@ const Home = () => {
     }
   };
 
-  const handleSearchChange = (e) => {
+  const handleSearchChange = useCallback((e) => {
     const query = e.target.value.trim();
     setSearchQuery(query);
 
@@ -122,9 +121,9 @@ const Home = () => {
         setFilteredProducts(allProducts);
       }
     }, 500);
-  };
+  }, [allProducts]);
 
-  const handleSortChange = (sort) => {
+  const handleSortChange = useCallback((sort) => {
     setSortOption(sort);
     const sortedProducts = [...filteredProducts];
 
@@ -140,13 +139,10 @@ const Home = () => {
     }
 
     setFilteredProducts(sortedProducts);
-  };
+  }, [filteredProducts]);
 
   useEffect(() => {
-    if (firstLoad.current) {
-      fetchProducts(true);
-      firstLoad.current = false;
-    }
+    fetchProducts(true);
   }, [fetchProducts]);
 
   useEffect(() => {
@@ -167,18 +163,18 @@ const Home = () => {
     };
   }, [hasMore, isLoading, fetchProducts, page]);
 
-  const handleProductClick = (id) => {
+  const handleProductClick = useCallback((id) => {
     const selectedProduct = allProducts.find((product) => product._id === id);
     if (selectedProduct) {
       navigate("/productDetails", { state: { product: selectedProduct } });
     }
-  };
+  }, [allProducts, navigate]);
 
-  const scrollToTop = () => {
+  const scrollToTop = useCallback(() => {
     if (topRef.current) {
       topRef.current.scrollIntoView({ behavior: "smooth" });
     }
-  };
+  }, []);
 
   return (
     <div className="d-flex flex-column bg-light">

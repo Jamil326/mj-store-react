@@ -2,6 +2,7 @@ import React, { useState, useCallback } from "react";
 import { Col, Image, Card, ListGroup, Row, Modal, Button } from "react-bootstrap";
 import {
   FaRupeeSign,
+  FaShippingFast,
   FaBoxOpen,
   FaTag,
   FaPalette,
@@ -57,7 +58,10 @@ const ProductDetailCard = ({ Product = {} }) => {
     { label: "Product ID", value: _id, icon: <FaTag /> },
   ];
 
-  const handleThumbnailClick = useCallback((index) => setCurrentIndex(index), []);
+  const handleThumbnailClick = useCallback((index) => {
+    setCurrentIndex(index);
+  }, []);
+
   const openModal = useCallback(() => setShowModal(true), []);
   const closeModal = useCallback(() => setShowModal(false), []);
 
@@ -72,26 +76,24 @@ const ProductDetailCard = ({ Product = {} }) => {
             spaceBetween={10}
             slidesPerView={1}
             onSlideChange={(swiper) => setCurrentIndex(swiper.activeIndex)}
-            className="shadow rounded mb-3"
-            style={{ width: "100%" }}
+            onClick={openModal}
+            className="shadow rounded mb-4"
           >
             {image.map((img, index) => (
               <SwiperSlide key={index}>
-                <div className="text-center">
-                  <Image
-                    src={img.url || "/placeholder.jpg"}
-                    fluid
-                    className="rounded"
-                    style={{ height: "320px", objectFit: "contain", cursor: "zoom-in", width: "100%" }}
-                    loading="lazy"
-                    onDoubleClick={openModal}
-                  />
-                </div>
+                <Image
+                  src={img.url || "/placeholder.jpg"}
+                  fluid
+                  thumbnail
+                  className="p-3"
+                  style={{ maxHeight: "350px", objectFit: "contain" }}
+                  loading="lazy"
+                />
               </SwiperSlide>
             ))}
           </Swiper>
 
-          <Row className="mb-3 justify-content-center">
+          <Row className="mb-4">
             {image.map((img, index) => (
               <Image
                 key={index}
@@ -99,10 +101,15 @@ const ProductDetailCard = ({ Product = {} }) => {
                 alt={`Thumbnail ${index + 1}`}
                 fluid
                 loading="lazy"
-                className={`rounded shadow-sm mx-1 ${
+                className={`rounded shadow-sm ${
                   currentIndex === index ? "border border-primary" : ""
                 }`}
-                style={{ width: "65px", height: "60px", objectFit: "cover", cursor: "pointer" }}
+                style={{
+                  width: "70px",
+                  height: "65px",
+                  objectFit: "cover",
+                  cursor: "pointer",
+                }}
                 onClick={() => handleThumbnailClick(index)}
               />
             ))}
@@ -110,19 +117,13 @@ const ProductDetailCard = ({ Product = {} }) => {
         </>
       )}
 
-      <Modal
-        show={showModal}
-        onHide={closeModal}
-        centered
-        backdropClassName="bg-dark bg-opacity-75"
-        contentClassName="border-0 bg-transparent"
-      >
-        <Modal.Body className="d-flex align-items-center justify-content-center p-0">
+      <Modal show={showModal} onHide={closeModal} centered>
+        <Modal.Body className="d-flex align-items-center justify-content-center">
           <Image
             src={image[currentIndex]?.url || "/placeholder.jpg"}
             fluid
             className="rounded shadow"
-            style={{ maxHeight: "90vh", objectFit: "contain" }}
+            style={{ width: "100%", height: "auto", maxHeight: "90vh", objectFit: "contain" }}
             loading="lazy"
           />
         </Modal.Body>
@@ -153,9 +154,7 @@ const ProductDetailCard = ({ Product = {} }) => {
       </Card>
 
       <Card className="shadow-sm border-0 rounded">
-        <Card.Header className="text-center text-success fs-5 fw-bold">
-          Product Details
-        </Card.Header>
+        <Card.Header className="text-center text-success fs-5 fw-bold">Product Details</Card.Header>
         <ListGroup className="list-group-flush">
           {productDetails.map((item, idx) => (
             <ListGroup.Item key={idx} className="d-flex justify-content-between">

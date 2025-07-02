@@ -8,7 +8,6 @@ import {
   Dropdown,
   Card,
   Placeholder,
-  Button
 } from "react-bootstrap";
 import { FaHeadphones, FaTools } from "react-icons/fa";
 import { GiClothes } from "react-icons/gi";
@@ -37,8 +36,6 @@ const Home = () => {
   const [sortOption, setSortOption] = useState("default");
   const loaderRef = useRef(null);
   const firstLoad = useRef(true);
-  const topRef = useRef(null);
-  const searchTimeout = useRef(null);
 
   const categories = [
     { name: "Hardware", icon: <FaTools /> },
@@ -105,23 +102,19 @@ const Home = () => {
     const query = e.target.value.trim();
     setSearchQuery(query);
 
-    clearTimeout(searchTimeout.current);
+    if (query) {
+      const localResults = allProducts.filter((product) =>
+        product.name.toLowerCase().includes(query.toLowerCase())
+      );
 
-    searchTimeout.current = setTimeout(() => {
-      if (query) {
-        const localResults = allProducts.filter((product) =>
-          product.name.toLowerCase().includes(query.toLowerCase())
-        );
-
-        if (localResults.length > 0) {
-          setFilteredProducts(localResults);
-        } else {
-          searchProductsFromAPI(query);
-        }
+      if (localResults.length > 0) {
+        setFilteredProducts(localResults);
       } else {
-        setFilteredProducts(allProducts);
+        searchProductsFromAPI(query);
       }
-    }, 500);
+    } else {
+      setFilteredProducts(allProducts);
+    }
   };
 
   const handleSortChange = (sort) => {
@@ -174,16 +167,8 @@ const Home = () => {
     }
   };
 
-  const scrollToTop = () => {
-    if (topRef.current) {
-      topRef.current.scrollIntoView({ behavior: "smooth" });
-    }
-  };
-
   return (
     <div className="d-flex flex-column bg-light">
-      <div ref={topRef} />
-
       <Container fluid className="py-3 bg-white shadow-sm sticky-top">
         <Row className="align-items-center">
           <Col xs={12} sm={6}>
@@ -251,12 +236,6 @@ const Home = () => {
           ))}
         </Row>
         <div ref={loaderRef} style={{ height: "1px" }} />
-
-        <div className="text-center my-4">
-          <Button variant="secondary" onClick={scrollToTop}>
-            Back to Top
-          </Button>
-        </div>
       </Container>
     </div>
   );
