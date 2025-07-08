@@ -150,7 +150,7 @@ const Home = () => {
     }
   };
 
-const handleCategoryClick = async (category) => {
+  const handleCategoryClick = async (category) => {
   scrollToTop();
   setSelectedCategory(category);
 
@@ -159,9 +159,8 @@ const handleCategoryClick = async (category) => {
     return;
   }
 
-  // Check if products already exist locally
-  const localMatch = allProducts.filter(
-    (p) => p.category?.toLowerCase() === category.toLowerCase()
+  const localMatch = allProducts.filter(p =>
+    p.category?.toLowerCase() === category.toLowerCase()
   );
 
   if (localMatch.length > 0) {
@@ -169,27 +168,28 @@ const handleCategoryClick = async (category) => {
     return;
   }
 
-  // Check cache
   if (categoryCache[category]) {
     setFilteredProducts(categoryCache[category]);
     return;
   }
 
   setCategoryLoading(true);
+  console.log(category);
   try {
     const res = await fetch("https://mj-store.onrender.com/api/v1/product/filter", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ category }),
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ category:category }),
     });
 
     const data = await res.json();
+    console.log('category',data.data.);
 
-    if (res.ok && data?.data?.length > 0) {
-      // Map and add any needed properties, e.g. rating = 4 if needed
-      const fetched = data.data.map(p => ({ ...p, rating: 4 }));
-
-      setFilteredProducts(fetched);
+    if (res.ok && data?.data) {
+      const fetched = data.map(p => ({ ...p }));
+      setFilteredProducts();
       setCategoryCache((prev) => ({ ...prev, [category]: fetched }));
     } else {
       toast.warn("No products found in this category.");
@@ -202,18 +202,12 @@ const handleCategoryClick = async (category) => {
   }
 };
 
- const handleProductClick = (id) => {
-  // Try to find from filtered list first (better UX), then fallback to all
-  const productList = filteredProducts.length > 0 ? filteredProducts : allProducts;
-  const selectedProduct = productList.find((product) => product._id === id);
-
-  if (selectedProduct) {
-    navigate("/productDetails", { state: { product: selectedProduct } });
-  } else {
-    toast.error("Product not found.");
-  }
-};
-
+  const handleProductClick = (id) => {
+    const selectedProduct = allProducts.find((product) => product._id === id);
+    if (selectedProduct) {
+      navigate("/productDetails", { state: { product: selectedProduct } });
+    }
+  };
 
   useEffect(() => {
     if (firstLoad.current) {

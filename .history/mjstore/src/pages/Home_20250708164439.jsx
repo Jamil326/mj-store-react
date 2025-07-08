@@ -201,19 +201,17 @@ const handleCategoryClick = async (category) => {
     setCategoryLoading(false);
   }
 };
-
- const handleProductClick = (id) => {
-  // Try to find from filtered list first (better UX), then fallback to all
-  const productList = filteredProducts.length > 0 ? filteredProducts : allProducts;
-  const selectedProduct = productList.find((product) => product._id === id);
-
-  if (selectedProduct) {
-    navigate("/productDetails", { state: { product: selectedProduct } });
-  } else {
-    toast.error("Product not found.");
+ finally {
+    setCategoryLoading(false);
   }
 };
 
+  const handleProductClick = (id) => {
+    const selectedProduct = allProducts.find((product) => product._id === id);
+    if (selectedProduct) {
+      navigate("/productDetails", { state: { product: selectedProduct } });
+    }
+  };
 
   useEffect(() => {
     if (firstLoad.current) {
