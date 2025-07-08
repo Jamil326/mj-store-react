@@ -185,10 +185,10 @@ const Home = () => {
     });
 
     const data = await res.json();
-    console.log('category',data);
+    console.log('category');
 
     if (res.ok && data?.data?.getProduct) {
-      const fetched = data.data.getProduct.map(p => ({ ...p }));
+      const fetched = data.data.getProduct.map(p => ({ ...p, rating: 4 }));
       setFilteredProducts(fetched);
       setCategoryCache((prev) => ({ ...prev, [category]: fetched }));
     } else {

@@ -188,9 +188,9 @@ const Home = () => {
     console.log('category',data);
 
     if (res.ok && data?.data?.getProduct) {
-      const fetched = data.data.getProduct.map(p => ({ ...p }));
-      setFilteredProducts(fetched);
-      setCategoryCache((prev) => ({ ...prev, [category]: fetched }));
+      const fetched = data.data.getProduct.map(p => ({ ...p, rating: 4 }));
+      setFilteredProducts(data);
+      setCategoryCache((prev) => ({ ...prev, [category]: f }));
     } else {
       toast.warn("No products found in this category.");
       setFilteredProducts([]);

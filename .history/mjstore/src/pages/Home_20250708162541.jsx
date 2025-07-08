@@ -189,7 +189,7 @@ const Home = () => {
 
     if (res.ok && data?.data?.getProduct) {
       const fetched = data.data.getProduct.map(p => ({ ...p }));
-      setFilteredProducts(fetched);
+      setFilteredProducts(fet);
       setCategoryCache((prev) => ({ ...prev, [category]: fetched }));
     } else {
       toast.warn("No products found in this category.");

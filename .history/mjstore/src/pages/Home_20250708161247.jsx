@@ -188,7 +188,7 @@ const Home = () => {
     console.log('category',data);
 
     if (res.ok && data?.data?.getProduct) {
-      const fetched = data.data.getProduct.map(p => ({ ...p }));
+      const fetched = data.data.getProduct.map(p => ({ ...p, rating: 4 }));
       setFilteredProducts(fetched);
       setCategoryCache((prev) => ({ ...prev, [category]: fetched }));
     } else {
