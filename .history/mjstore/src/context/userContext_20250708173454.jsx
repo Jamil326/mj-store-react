@@ -21,7 +21,7 @@ export const UserContext = createContext();
 
     
      return(
-         <UserContext.Provider value={{user ,setUser ,token, logged ,setLogged}}>
+         <UserContext.Provider value={{user ,setUser ,token logged ,setLogged}}>
          { children }
          </UserContext.Provider>
      )

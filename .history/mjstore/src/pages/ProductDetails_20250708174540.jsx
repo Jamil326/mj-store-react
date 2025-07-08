@@ -2,7 +2,6 @@ import React, { useCallback, useState, useEffect, Suspense } from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { Button, Container, Row, Col, Spinner } from "react-bootstrap";
 import { toast } from "react-toastify";
-import { FaShareAlt } from "react-icons/fa"; // ✅ Share icon
 
 const ProductDetailCard = React.lazy(() => import("../components/ProductDetailCard"));
 
@@ -11,24 +10,28 @@ const ProductDetails = () => {
   const location = useLocation();
   const { productId } = useParams();
 
+  // Product passed via location.state OR null
   const productFromState = location.state?.product || null;
+
   const [product, setProduct] = useState(productFromState);
   const [loading, setLoading] = useState(!productFromState);
   const [isProcessing, setIsProcessing] = useState(false);
 
   const isLoggedIn = useCallback(() => {
-    return !!localStorage.getItem("token");
+    const token = localStorage.getItem("token");
+    return !!token;
   }, []);
 
+  // Fetch product if not passed via state and productId exists
   useEffect(() => {
     if (!productFromState && productId) {
       const fetchProduct = async () => {
         try {
-          const res = await fetch(`https://mj-store.onrender.com/api/v1/product/get/product/${productId}`);
+          const res = await fetch(`https://mj-store.onrender.com/api/v1/product/${productId}`);
           const data = await res.json();
 
           if (res.ok && data?.data) {
-            setProduct({ ...data.data, rating: 4 });
+            setProduct({ ...data.data, rating: 4 }); // you had rating fallback in previous code
           } else {
             toast.warn("Product not found.");
           }
@@ -84,30 +87,7 @@ const ProductDetails = () => {
     navigate("/checkout", { state: { item: product } });
   }, [navigate, product, isProcessing]);
 
-  const handleShareProduct = useCallback(() => {
-    if (!product?._id) {
-      toast.warn("Product is not shareable.");
-      return;
-    }
-
-    const shareUrl = `${window.location.origin}/productDetails/${product._id}`;
-
-    if (navigator.share) {
-      navigator
-        .share({
-          title: product.name,
-          text: "Check out this product!",
-          url: shareUrl,
-        })
-        .catch(() => {
-          toast.info("Sharing cancelled or failed.");
-        });
-    } else {
-      navigator.clipboard.writeText(shareUrl);
-      toast.success("Product link copied to clipboard!");
-    }
-  }, [product]);
-
+  // Loading spinner if fetching product
   if (loading) {
     return (
       <Container className="py-5 text-center">
@@ -117,6 +97,7 @@ const ProductDetails = () => {
     );
   }
 
+  // No product to display
   if (!product) {
     return (
       <Container className="py-5 text-center">
@@ -130,17 +111,6 @@ const ProductDetails = () => {
 
   return (
     <Container fluid className="p-3 mb-5 pb-5" style={{ paddingBottom: "140px" }}>
-      {/* Top Share Row */}
-      <Row className="justify-content-end mb-2">
-        <Col xs="auto">
-          <Button variant="outline-secondary" onClick={handleShareProduct}>
-            <FaShareAlt className="me-1" />
-            Share
-          </Button>
-        </Col>
-      </Row>
-
-      {/* Product Details */}
       <Row>
         <Col xs={12} className="mb-4">
           <Suspense
@@ -155,7 +125,6 @@ const ProductDetails = () => {
         </Col>
       </Row>
 
-      {/* Bottom Buttons */}
       <Row
         className="bg-light border-top py-3 shadow-lg"
         style={{

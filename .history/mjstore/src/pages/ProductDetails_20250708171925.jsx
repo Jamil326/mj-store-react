@@ -1,30 +1,42 @@
-import React, { useCallback, useState, useEffect, Suspense } from "react";
+import React, {
+  useCallback,
+  useMemo,
+  useState,
+  useEffect,
+  Suspense,
+} from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { Button, Container, Row, Col, Spinner } from "react-bootstrap";
 import { toast } from "react-toastify";
-import { FaShareAlt } from "react-icons/fa"; // ✅ Share icon
 
-const ProductDetailCard = React.lazy(() => import("../components/ProductDetailCard"));
+// ✅ Lazy load ProductDetailCard
+const ProductDetailCard = React.lazy(() =>
+  import("../components/ProductDetailCard")
+);
 
 const ProductDetails = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { productId } = useParams();
 
-  const productFromState = location.state?.product || null;
-  const [product, setProduct] = useState(productFromState);
+  const productFromState = location.state?.product;
+  const [product, setProduct] = useState(productFromState || null);
   const [loading, setLoading] = useState(!productFromState);
   const [isProcessing, setIsProcessing] = useState(false);
 
   const isLoggedIn = useCallback(() => {
-    return !!localStorage.getItem("token");
+    const token = localStorage.getItem("token");
+    return !!token;
   }, []);
 
+  // ✅ Fetch product from API if not passed via state
   useEffect(() => {
     if (!productFromState && productId) {
       const fetchProduct = async () => {
         try {
-          const res = await fetch(`https://mj-store.onrender.com/api/v1/product/get/product/${productId}`);
+          const res = await fetch(
+            `https://mj-store.onrender.com/api/v1/product/${productId}`
+          );
           const data = await res.json();
 
           if (res.ok && data?.data) {
@@ -44,7 +56,7 @@ const ProductDetails = () => {
   }, [productFromState, productId]);
 
   const handleAddToCart = async () => {
-    if (isProcessing) return;
+    if (isProcessing || !product) return;
 
     if (!isLoggedIn()) {
       toast.error("You need to log in to add items to your cart.");
@@ -55,14 +67,17 @@ const ProductDetails = () => {
     setIsProcessing(true);
 
     try {
-      const response = await fetch("https://mj-store.onrender.com/api/v1/user/cart/add", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
-        body: JSON.stringify({ productId: product._id }),
-      });
+      const response = await fetch(
+        "https://mj-store.onrender.com/api/v1/user/cart/add",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+          body: JSON.stringify({ productId: product._id }),
+        }
+      );
 
       const result = await response.json();
 
@@ -80,33 +95,9 @@ const ProductDetails = () => {
   };
 
   const handleBuyNow = useCallback(() => {
-    if (isProcessing) return;
+    if (isProcessing || !product) return;
     navigate("/checkout", { state: { item: product } });
   }, [navigate, product, isProcessing]);
-
-  const handleShareProduct = useCallback(() => {
-    if (!product?._id) {
-      toast.warn("Product is not shareable.");
-      return;
-    }
-
-    const shareUrl = `${window.location.origin}/productDetails/${product._id}`;
-
-    if (navigator.share) {
-      navigator
-        .share({
-          title: product.name,
-          text: "Check out this product!",
-          url: shareUrl,
-        })
-        .catch(() => {
-          toast.info("Sharing cancelled or failed.");
-        });
-    } else {
-      navigator.clipboard.writeText(shareUrl);
-      toast.success("Product link copied to clipboard!");
-    }
-  }, [product]);
 
   if (loading) {
     return (
@@ -129,18 +120,11 @@ const ProductDetails = () => {
   }
 
   return (
-    <Container fluid className="p-3 mb-5 pb-5" style={{ paddingBottom: "140px" }}>
-      {/* Top Share Row */}
-      <Row className="justify-content-end mb-2">
-        <Col xs="auto">
-          <Button variant="outline-secondary" onClick={handleShareProduct}>
-            <FaShareAlt className="me-1" />
-            Share
-          </Button>
-        </Col>
-      </Row>
-
-      {/* Product Details */}
+    <Container
+      fluid
+      className="p-3 mb-5 pb-5"
+      style={{ paddingBottom: "140px" }}
+    >
       <Row>
         <Col xs={12} className="mb-4">
           <Suspense
@@ -155,7 +139,6 @@ const ProductDetails = () => {
         </Col>
       </Row>
 
-      {/* Bottom Buttons */}
       <Row
         className="bg-light border-top py-3 shadow-lg"
         style={{

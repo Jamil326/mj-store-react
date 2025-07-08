@@ -24,7 +24,7 @@ const ProductDetails = () => {
     if (!productFromState && productId) {
       const fetchProduct = async () => {
         try {
-          const res = await fetch(`https://mj-store.onrender.com/api/v1/product/get/product/${productId}`);
+          const res = await fetch(`https://mj-store.onrender.com/api/v1/product/${productId}`);
           const data = await res.json();
 
           if (res.ok && data?.data) {
