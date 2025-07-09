@@ -43,63 +43,67 @@ const Home = () => {
   const topRef = useRef(null);
   const searchTimeout = useRef(null);
 
-  const [initialLoading, setInitialLoading] = useState(true); // ✅ NEW
-
   const categories = [
     { name: "Hardware", icon: <FaTools /> },
     { name: "Electronic", icon: <FaHeadphones /> },
     { name: "All", icon: <GiClothes /> },
   ];
 
-  const fetchProducts = useCallback(async (reset = false, newPage = 1) => {
-    if (isLoading || (!hasMore && !reset)) return;
+ const fetchProducts = useCallback(async (reset = false, newPage = 1) => {
+  if (isLoading || (!hasMore && !reset)) return;
 
-    setIsLoading(true);
-    const limit = 16;
+  setIsLoading(true);
+  const limit = 16;
 
+  try {
+    const apiUrl = `https://mj-store.onrender.com/api/v1/product/get/product?page=${newPage}&limit=${limit}`;
+    const res = await fetch(apiUrl);
+
+    // Validate if response is JSON
+    let data = {};
     try {
-      const apiUrl = `https://mj-store.onrender.com/api/v1/product/get/product?page=${newPage}&limit=${limit}`;
-      const res = await fetch(apiUrl);
-
-      let data = {};
-      try {
-        data = await res.json();
-      } catch (err) {
-        throw new Error("Invalid JSON response from server.");
-      }
-
-      if (!res.ok) {
-        throw new Error(data?.message || "Failed to fetch products from server.");
-      }
-
-      if (!Array.isArray(data?.data?.getProduct)) {
-        throw new Error("Unexpected response format.");
-      }
-
-      const fetchedProducts = data.data.getProduct.map(p => ({ ...p, rating: 4 }));
-
-      if (reset) {
-        setAllProducts(fetchedProducts);
-        setFilteredProducts(fetchedProducts);
-        setHasMore(fetchedProducts.length === limit);
-        setPage(2);
-      } else {
-        setAllProducts((prev) => [...prev, ...fetchedProducts]);
-        setFilteredProducts((prev) => [...prev, ...fetchedProducts]);
-        setHasMore(fetchedProducts.length === limit);
-        setPage(prev => prev + 1);
-      }
-    } catch (error) {
-      if (!navigator.onLine) {
-        toast.error("You're offline. Please check your internet connection.");
-      } else {
-        toast.error(error.message || "An error occurred while fetching products.");
-      }
-      setHasMore(false);
-    } finally {
-      setIsLoading(false);
+      data = await res.json();
+    } catch (err) {
+      throw new Error("Invalid JSON response from server.");
     }
-  }, [hasMore, isLoading]);
+
+    // Handle server-side error
+    if (!res.ok) {
+      throw new Error(data?.message || "Failed to fetch products from server.");
+    }
+
+    // Validate response format
+    if (!Array.isArray(data?.data?.getProduct)) {
+      throw new Error("Unexpected response format.");
+    }
+
+    const fetchedProducts = data.data.getProduct.map(p => ({ ...p, rating: 4 }));
+
+    if (reset) {
+      setAllProducts(fetchedProducts);
+      setFilteredProducts(fetchedProducts);
+      setHasMore(fetchedProducts.length === limit);
+      setPage(2);
+    } else {
+      setAllProducts((prev) => [...prev, ...fetchedProducts]);
+      setFilteredProducts((prev) => [...prev, ...fetchedProducts]);
+      setHasMore(fetchedProducts.length === limit);
+      setPage(prev => prev + 1);
+    }
+  } catch (error) {
+    // Network offline or fetch failure
+    if (!navigator.onLine) {
+      toast.error("You're offline. Please check your internet connection.");
+    } else {
+      toast.error(error.message || "An error occurred while fetching products.");
+    }
+
+    // Important to prevent infinite IntersectionObserver loop
+    setHasMore(false);
+  } finally {
+    setIsLoading(false);
+  }
+}, [hasMore, isLoading]);
 
   const handleSearchChange = (e) => {
     const query = e.target.value.trim();
@@ -166,72 +170,78 @@ const Home = () => {
     }
   };
 
-  const handleCategoryClick = async (category) => {
-    scrollToTop();
-    setSelectedCategory(category);
+const handleCategoryClick = async (category) => {
+  scrollToTop();
+  setSelectedCategory(category);
 
-    if (category === "All") {
-      setFilteredProducts(allProducts);
-      return;
-    }
+  if (category === "All") {
+    setFilteredProducts(allProducts);
+    return;
+  }
 
-    const localMatch = allProducts.filter(
-      (p) => p.category?.toLowerCase() === category.toLowerCase()
-    );
+  // Check if products already exist locally
+  const localMatch = allProducts.filter(
+    (p) => p.category?.toLowerCase() === category.toLowerCase()
+  );
 
-    if (localMatch.length > 0) {
-      setFilteredProducts(localMatch);
-      return;
-    }
+  if (localMatch.length > 0) {
+    setFilteredProducts(localMatch);
+    return;
+  }
 
-    if (categoryCache[category]) {
-      setFilteredProducts(categoryCache[category]);
-      return;
-    }
+  // Check cache
+  if (categoryCache[category]) {
+    setFilteredProducts(categoryCache[category]);
+    return;
+  }
 
-    setCategoryLoading(true);
-    try {
-      const res = await fetch("https://mj-store.onrender.com/api/v1/product/filter", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ category }),
-      });
+  setCategoryLoading(true);
+  try {
+    const res = await fetch("https://mj-store.onrender.com/api/v1/product/filter", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ category }),
+    });
 
-      const data = await res.json();
+    const data = await res.json();
 
-      if (res.ok && data?.data?.length > 0) {
-        const fetched = data.data.map(p => ({ ...p, rating: 4 }));
-        setFilteredProducts(fetched);
-        setCategoryCache((prev) => ({ ...prev, [category]: fetched }));
-      } else {
-        toast.warn("No products found in this category.");
-        setFilteredProducts([]);
-      }
-    } catch (err) {
-      toast.error("Failed to fetch category products.");
-    } finally {
-      setCategoryLoading(false);
-    }
-  };
+    if (res.ok && data?.data?.length > 0) {
+      // Map and add any needed properties, e.g. rating = 4 if needed
+      const fetched = data.data.map(p => ({ ...p, rating: 4 }));
 
-  const handleProductClick = (id) => {
-    const productList = filteredProducts.length ? filteredProducts : allProducts;
-    const selectedProduct = productList.find((product) => product._id === id);
-
-    if (selectedProduct) {
-      navigate(`/productDetails/${id}`, { state: { product: selectedProduct } });
+      setFilteredProducts(fetched);
+      setCategoryCache((prev) => ({ ...prev, [category]: fetched }));
     } else {
-      toast.warn("Product not found in current list. Trying to load from server...");
-      navigate(`/productDetails/${id}`);
+      toast.warn("No products found in this category.");
+      setFilteredProducts([]);
     }
-  };
+  } catch (err) {
+    toast.error("Failed to fetch category products.");
+  } finally {
+    setCategoryLoading(false);
+  }
+};
+
+const handleProductClick = (id) => {
+  // Prioritize user-visible filtered products for better UX
+  const productList = filteredProducts.length ? filteredProducts : allProducts;
+
+  const selectedProduct = productList.find((product) => product._id === id);
+
+  if (selectedProduct) {
+    // Navigate using state (faster, avoids refetch if possible)
+    navigate(`/productDetails/${id}`, { state: { product: selectedProduct } });
+  } else {
+    // Optionally allow fallback by just going to route (if dynamic loading is implemented)
+    toast.warn("Product not found in current list. Trying to load from server...");
+    navigate(`/productDetails/${id}`);
+  }
+};
+
 
   useEffect(() => {
     if (firstLoad.current) {
-      setInitialLoading(true); // ✅ Show full-page spinner
-      fetchProducts(true).finally(() => {
-        setInitialLoading(false); // ✅ Hide after load
-      });
+      fetchProducts(true);
       firstLoad.current = false;
     }
   }, [fetchProducts]);
@@ -253,18 +263,6 @@ const Home = () => {
       if (currentLoader) observer.unobserve(currentLoader);
     };
   }, [hasMore, isLoading, fetchProducts, page]);
-
-  // ✅ Full Page Spinner Block
-  if (initialLoading) {
-    return (
-      <div className="d-flex justify-content-center align-items-center vh-100 bg-white">
-        <div className="text-center">
-          <div className="spinner-border text-success" role="status" />
-          <p className="mt-3 fw-bold">Loading products...</p>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="d-flex flex-column bg-light">

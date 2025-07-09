@@ -2,7 +2,7 @@ import React, { useCallback, useState, useEffect, Suspense } from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { Button, Container, Row, Col, Spinner } from "react-bootstrap";
 import { toast } from "react-toastify";
-import { FaShareAlt } from "react-icons/fa";
+import { FaShareAlt } from "react-icons/fa"; // ✅ Share icon
 
 const ProductDetailCard = React.lazy(() => import("../components/ProductDetailCard"));
 
@@ -13,46 +13,38 @@ const ProductDetails = () => {
 
   const productFromState = location.state?.product || null;
   const [product, setProduct] = useState(productFromState);
-  const [loading, setLoading] = useState(!productFromState); // Only load if no state
+  const [loading, setLoading] = useState(!productFromState);
   const [isProcessing, setIsProcessing] = useState(false);
 
-  const isLoggedIn = useCallback(() => !!localStorage.getItem("token"), []);
+  const isLoggedIn = useCallback(() => {
+    return !!localStorage.getItem("token");
+  }, []);
 
   useEffect(() => {
-    const controller = new AbortController();
-
-    const fetchProduct = async () => {
-      try {
-        const res = await fetch(
-          `https://mj-store.onrender.com/api/v1/product/get/product/${productId}`,
-          { signal: controller.signal }
-        );
-        const data = await res.json();
-
-        if (res.ok && data?.data) {
-          setProduct(data.data);
-        } else {
-          toast.warn(data?.message || "Product not found.");
-        }
-      } catch (error) {
-        if (error.name !== "AbortError") {
-          toast.error("Failed to fetch product details.");
-        }
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    // Fallback only if product is not passed through navigation state
     if (!productFromState && productId) {
+      const fetchProduct = async () => {
+        try {
+          const res = await fetch(`https://mj-store.onrender.com/api/v1/product/get/product/${productId}`);
+          const data = await res.json();
+
+          if (res.ok && data?.data) {
+            setProduct({ ...data.data });
+          } else {
+            toast.warn("Product not found.");
+          }
+        } catch (error) {
+          toast.error("Failed to fetch product details.");
+        } finally {
+          setLoading(false);
+        }
+      };
+
       fetchProduct();
     }
-
-    return () => controller.abort();
   }, [productFromState, productId]);
 
   const handleAddToCart = async () => {
-    if (isProcessing || !product?._id) return;
+    if (isProcessing) return;
 
     if (!isLoggedIn()) {
       toast.error("You need to log in to add items to your cart.");
@@ -61,8 +53,9 @@ const ProductDetails = () => {
     }
 
     setIsProcessing(true);
+
     try {
-      const res = await fetch("https://mj-store.onrender.com/api/v1/user/cart/add", {
+      const response = await fetch("https://mj-store.onrender.com/api/v1/user/cart/add", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -71,14 +64,15 @@ const ProductDetails = () => {
         body: JSON.stringify({ productId: product._id }),
       });
 
-      const result = await res.json();
-      if (res.ok) {
+      const result = await response.json();
+
+      if (response.ok) {
         toast.success(`${product.name} added to cart successfully!`);
         navigate("/cart");
       } else {
-        toast.error(result?.message || "Failed to add product.");
+        toast.error(`Failed to add product: ${result.message}`);
       }
-    } catch (err) {
+    } catch (error) {
       toast.error("An error occurred while adding to cart.");
     } finally {
       setIsProcessing(false);
@@ -86,7 +80,7 @@ const ProductDetails = () => {
   };
 
   const handleBuyNow = useCallback(() => {
-    if (!product || isProcessing) return;
+    if (isProcessing) return;
     navigate("/checkout", { state: { item: product } });
   }, [navigate, product, isProcessing]);
 
@@ -97,6 +91,7 @@ const ProductDetails = () => {
     }
 
     const shareUrl = `${window.location.origin}/productDetails/${product._id}`;
+
     if (navigator.share) {
       navigator
         .share({
@@ -104,14 +99,15 @@ const ProductDetails = () => {
           text: "Check out this product!",
           url: shareUrl,
         })
-        .catch(() => toast.info("Sharing cancelled or failed."));
+        .catch(() => {
+          toast.info("Sharing cancelled or failed.");
+        });
     } else {
       navigator.clipboard.writeText(shareUrl);
       toast.success("Product link copied to clipboard!");
     }
   }, [product]);
 
-  // 🔄 Show loader if still fetching and no product
   if (loading) {
     return (
       <Container className="py-5 text-center">
@@ -134,7 +130,7 @@ const ProductDetails = () => {
 
   return (
     <Container fluid className="p-3 mb-5 pb-5" style={{ paddingBottom: "140px" }}>
-      {/* Top Share Button */}
+      {/* Top Share Row */}
       <Row className="justify-content-end mb-2">
         <Col xs="auto">
           <Button variant="outline-secondary" onClick={handleShareProduct}>
@@ -144,7 +140,7 @@ const ProductDetails = () => {
         </Col>
       </Row>
 
-      {/* Product Card */}
+      {/* Product Details */}
       <Row>
         <Col xs={12} className="mb-4">
           <Suspense
@@ -159,7 +155,7 @@ const ProductDetails = () => {
         </Col>
       </Row>
 
-      {/* Bottom CTA Buttons */}
+      {/* Bottom Buttons */}
       <Row
         className="bg-light border-top py-3 shadow-lg"
         style={{

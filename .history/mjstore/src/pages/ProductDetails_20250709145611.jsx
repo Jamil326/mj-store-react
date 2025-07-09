@@ -8,12 +8,10 @@ const ProductDetailCard = React.lazy(() => import("../components/ProductDetailCa
 
 const ProductDetails = () => {
   const navigate = useNavigate();
-  const location = useLocation();
   const { productId } = useParams();
 
-  const productFromState = location.state?.product || null;
-  const [product, setProduct] = useState(productFromState);
-  const [loading, setLoading] = useState(!productFromState); // Only load if no state
+  const [product, setProduct] = useState(null);
+  const [loading, setLoading] = useState(true);
   const [isProcessing, setIsProcessing] = useState(false);
 
   const isLoggedIn = useCallback(() => !!localStorage.getItem("token"), []);
@@ -23,10 +21,9 @@ const ProductDetails = () => {
 
     const fetchProduct = async () => {
       try {
-        const res = await fetch(
-          `https://mj-store.onrender.com/api/v1/product/get/product/${productId}`,
-          { signal: controller.signal }
-        );
+        const res = await fetch(`https://mj-store.onrender.com/api/v1/product/get/product/${productId}`, {
+          signal: controller.signal,
+        });
         const data = await res.json();
 
         if (res.ok && data?.data) {
@@ -43,13 +40,9 @@ const ProductDetails = () => {
       }
     };
 
-    // Fallback only if product is not passed through navigation state
-    if (!productFromState && productId) {
-      fetchProduct();
-    }
-
-    return () => controller.abort();
-  }, [productFromState, productId]);
+    if (productId) fetchProduct();
+    return () => controller.abort(); // cleanup on unmount
+  }, [productId]);
 
   const handleAddToCart = async () => {
     if (isProcessing || !product?._id) return;
@@ -111,7 +104,7 @@ const ProductDetails = () => {
     }
   }, [product]);
 
-  // 🔄 Show loader if still fetching and no product
+  // 🔄 Show loader until API resolves
   if (loading) {
     return (
       <Container className="py-5 text-center">
