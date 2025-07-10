@@ -68,7 +68,7 @@ const ProductFilterPage = () => {
   };
 
   const handleProductClick = (product) => {
-    navigate(`/productDetails/${product._id}`, { state: { product } });
+    navigate(`/productDetails/${product.-}`, { state: { product } });
   };
 
   useEffect(() => {

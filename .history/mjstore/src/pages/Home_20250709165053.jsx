@@ -52,55 +52,61 @@ const Home = () => {
     { name: "All", icon: <GiClothes /> },
   ];
 
-  const fetchProducts = useCallback(async (reset = false, newPage = 1) => {
-    if (isLoading || (!hasMore && !reset)) return;
+ const fetchProducts = useCallback(async (reset = false, newPage = 1) => {
+  if (isLoading || (!hasMore && !reset)) return;
 
-    setIsLoading(true);
-    const limit = 16;
-
-    try {
-      const apiUrl = `https://mj-store.onrender.com/api/v1/product/get/product?page=${newPage}&limit=${limit}`;
-      const res = await fetch(apiUrl);
-
-      let data = {};
-      try {
-        data = await res.json();
-      } catch (err) {
-        throw new Error("Invalid JSON response from server.");
-      }
-
-      if (!res.ok) {
-        throw new Error(data?.message || "Failed to fetch products from server.");
-      }
-
-      if (!Array.isArray(data?.data?.getProduct)) {
-        throw new Error("Unexpected response format.");
-      }
-
-      const fetchedProducts = data.data.getProduct.map(p => ({ ...p, rating: 4 }));
-
-      if (reset) {
-        setAllProducts(fetchedProducts);
-        setFilteredProducts(fetchedProducts);
-        setHasMore(fetchedProducts.length === limit);
-        setPage(2);
-      } else {
-        setAllProducts((prev) => [...prev, ...fetchedProducts]);
-        setFilteredProducts((prev) => [...prev, ...fetchedProducts]);
-        setHasMore(fetchedProducts.length === limit);
-        setPage(prev => prev + 1);
-      }
-    } catch (error) {
-      if (!navigator.onLine) {
-        toast.error("You're offline. Please check your internet connection.");
-      } else {
-        toast.error(error.message || "An error occurred while fetching products.");
-      }
-      setHasMore(false);
-    } finally {
-      setIsLoading(false);
+  if (!navigator.onLine) {
+    if (!offlineToastShown.current) {
+      toast.error("You're offline. Please check your internet connection.");
+      offlineToastShown.current = true;
+      setTimeout(() => (offlineToastShown.current = false), 5000);
     }
-  }, [hasMore, isLoading]);
+    return;
+  }
+
+  setIsLoading(true);
+  const limit = 16;
+
+  try {
+    const apiUrl = `https://mj-store.onrender.com/api/v1/product/get/product?page=${newPage}&limit=${limit}`;
+    const res = await fetch(apiUrl);
+
+    let data = {};
+    try {
+      data = await res.json();
+    } catch (err) {
+      throw new Error("Invalid JSON response from server.");
+    }
+
+    if (!res.ok) {
+      throw new Error(data?.message || "Failed to fetch products from server.");
+    }
+
+    if (!Array.isArray(data?.data?.getProduct)) {
+      throw new Error("Unexpected response format.");
+    }
+
+    const fetchedProducts = data.data.getProduct.map(p => ({ ...p, rating: 4 }));
+
+    if (reset) {
+      setAllProducts(fetchedProducts);
+      setFilteredProducts(fetchedProducts);
+      setHasMore(fetchedProducts.length === limit);
+      setPage(2);
+    } else {
+      setAllProducts((prev) => [...prev, ...fetchedProducts]);
+      setFilteredProducts((prev) => [...prev, ...fetchedProducts]);
+      setHasMore(fetchedProducts.length === limit);
+      setPage(prev => prev + 1);
+    }
+  } catch (error) {
+    toast.error(error.message || "An error occurred while fetching products.");
+    setHasMore(false);
+  } finally {
+    setIsLoading(false);
+  }
+}, [hasMore, isLoading]);
+
 
   const handleSearchChange = (e) => {
     const query = e.target.value.trim();
@@ -227,33 +233,29 @@ const Home = () => {
     }
   };
 
-  useEffect(() => {
-    if (firstLoad.current) {
-      setInitialLoading(true); // ✅ Show full-page spinner
-      fetchProducts(true).finally(() => {
-        setInitialLoading(false); // ✅ Hide after load
-      });
-      firstLoad.current = false;
-    }
-  }, [fetchProducts]);
+useEffect(() => {
+  const observer = new IntersectionObserver(
+    (entries) => {
+      if (
+        entries[0].isIntersecting &&
+        hasMore &&
+        !isLoading &&
+        navigator.onLine
+      ) {
+        fetchProducts(false, page);
+      }
+    },
+    { threshold: 1.0 }
+  );
 
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      (entries) => {
-        if (entries[0].isIntersecting && hasMore && !isLoading) {
-          fetchProducts(false, page);
-        }
-      },
-      { threshold: 1.0 }
-    );
+  const currentLoader = loaderRef.current;
+  if (currentLoader) observer.observe(currentLoader);
 
-    const currentLoader = loaderRef.current;
-    if (currentLoader) observer.observe(currentLoader);
+  return () => {
+    if (currentLoader) observer.unobserve(currentLoader);
+  };
+}, [hasMore, isLoading, fetchProducts, page]);
 
-    return () => {
-      if (currentLoader) observer.unobserve(currentLoader);
-    };
-  }, [hasMore, isLoading, fetchProducts, page]);
 
   // ✅ Full Page Spinner Block
   if (initialLoading) {

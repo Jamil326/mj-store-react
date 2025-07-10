@@ -28,7 +28,7 @@ const SkeletonCard = () => (
 
 const Home = () => {
   const navigate = useNavigate();
-  const offlineToastShown = useRef(false); // Prevents repeated offline toasts
+  
   const [allProducts, setAllProducts] = useState([]);
   const [filteredProducts, setFilteredProducts] = useState([]);
   const [page, setPage] = useState(1);
